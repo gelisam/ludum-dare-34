@@ -4,20 +4,19 @@
 all: init build
 .PHONY: all init test build rebuild
 
-init: .cabal-sandbox/
-.cabal-sandbox:
+init: .cabal-sandbox/sandbox-exists
+.cabal-sandbox/sandbox-exists:
 	haste-cabal sandbox init
+	touch $@
 
 test: build
-	open $<
+	open http://127.0.0.1:8000/ludum-dare34.html
+	python -m SimpleHTTPServer
 
-build: .cabal-sandbox/bin/ludum-dare34.html .cabal-sandbox/bin/img/bird.png
-.cabal-sandbox/bin/ludum-dare34.html: src/Main.hs
+build: ludum-dare34.html
+ludum-dare34.html: src/Main.hs
 	haste-cabal install
-
-.cabal-sandbox/bin/img/%.png: img/%.png
-	mkdir -p .cabal-sandbox/bin/img
-	cp $< $@
+	cat .cabal-sandbox/bin/ludum-dare34.html > $@
 
 rebuild:
 	touch src/Main.hs
