@@ -86,7 +86,7 @@
             }
             if(object.type == "dialog") {
                 var shape = {x:object.x, y:object.y, w:object.width, h:object.height, type:"rectangle", class:"dialog", dialog:object.properties};
-                var arrow = scene.Sprite("arrow.png", {w:24, h:28, x:shape.x, y:shape.y-28});
+                var arrow = _scene.Sprite("arrow.png", {w:24, h:28, x:shape.x, y:shape.y-28});
                 shape.sprite = arrow;
                 sjs.map.activeObjects.push(shape);
             }
