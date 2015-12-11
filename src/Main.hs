@@ -3,6 +3,9 @@ import Haste
 import Haste.DOM
 import Haste.Foreign
 
+visual_guide :: IO ()
+visual_guide = ffi "visual_guide"
+
 
 console_log :: JSString -> IO ()
 console_log = ffi "(function(x) {console.log(x)})"
@@ -15,5 +18,5 @@ main = do
                              , style "left"     =: "400px"
                              ]
   appendChild documentBody div
-  ffi "visual_guide();" :: IO ()
+  visual_guide
   putStrLn "done."
