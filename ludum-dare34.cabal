@@ -21,4 +21,4 @@ executable ludum-dare34
                      , haste-lib
   hs-source-dirs:      src
   default-language:    Haskell2010
-  GHC-options: --with-js=js/sprite.js,js/collision.js,js/visual_guide.js,js/mapimport.js -W -Wall --out=dist/Main.js
+  GHC-options: --no-use-strict --with-js=js/sprite.js,js/collision.js,js/scrolling.js,js/visual_guide.js,js/mapimport.js -W -Wall --out=dist/Main.js
