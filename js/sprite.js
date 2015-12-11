@@ -1522,9 +1522,11 @@ _addEventListener(global, "blur", function (e) {
         if (!scene.autoPause)
             continue;
         var anon = function (scene) {
-            inputSingleton.keyboard = {};
-            inputSingleton.keydown = false;
-            inputSingleton.mousedown = false;
+            if (inputSingleton) {
+              inputSingleton.keyboard = {};
+              inputSingleton.keydown = false;
+              inputSingleton.mousedown = false;
+            }
             // create a semi transparent layer on the game
             if (scene.ticker && !scene.ticker.paused) {
                 scene.ticker.pause();
