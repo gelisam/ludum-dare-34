@@ -22,4 +22,4 @@ main :: IO ()
 main = do
     putStrLn "it begins!"
     visual_guide
-    putStrLn "done."
+    console_log "done."
