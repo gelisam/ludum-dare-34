@@ -21,5 +21,6 @@ console_log = ffi "(function(x) {console.log(x)})"
 main :: IO ()
 main = do
     putStrLn "it begins!"
-    visual_guide
+    ffi "map_reader" :: IO ()  -- tiles but no sprites
+    -- visual_guide  -- sprites but no tiles
     console_log "done."
