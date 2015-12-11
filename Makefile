@@ -11,6 +11,10 @@ init: .cabal-sandbox/
 test: build
 	open $<
 
-build: .cabal-sandbox/bin/ludum-dare34.html
+build: .cabal-sandbox/bin/ludum-dare34.html .cabal-sandbox/bin/img/bird.png
 .cabal-sandbox/bin/ludum-dare34.html: src/Main.hs
 	haste-cabal install
+
+.cabal-sandbox/bin/img/%.png: img/%.png
+	mkdir -p .cabal-sandbox/bin/img
+	cp $< $@
