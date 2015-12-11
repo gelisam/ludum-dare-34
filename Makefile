@@ -10,13 +10,12 @@ init: .cabal-sandbox/sandbox-exists
 	touch $@
 
 test: build
-	open http://127.0.0.1:8000/ludum-dare34.html
+	open http://127.0.0.1:8000/
 	python -m SimpleHTTPServer
 
-build: ludum-dare34.html
-ludum-dare34.html: src/Main.hs
+build: dist/Main.js
+dist/Main.js: src/Main.hs
 	haste-cabal install
-	cat .cabal-sandbox/bin/ludum-dare34.html > $@
 
 rebuild:
 	touch src/Main.hs
