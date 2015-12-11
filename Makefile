@@ -1,7 +1,7 @@
 # requires the Haste compiler
 #   http://haste-lang.org/downloads/
 
-all: init build
+all: build
 .PHONY: all init test build rebuild
 
 init: .cabal-sandbox/sandbox-exists
@@ -14,7 +14,7 @@ test: build
 	python -m SimpleHTTPServer
 
 build: dist/Main.js
-dist/Main.js: src/Main.hs
+dist/Main.js: .cabal-sandbox/sandbox-exists src/Main.hs
 	haste-cabal install
 
 rebuild:
