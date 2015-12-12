@@ -5,6 +5,7 @@ import Haste
 import Haste.DOM
 import Haste.Foreign
 import Haste.Prim
+import Text.Printf
 
 import JSRef
 import Random
@@ -121,7 +122,16 @@ main = do
               updateSprite bottom
               appendToSpriteList elements bottom
             
-            rest game_width game_height scene back front score bottom elements player input cycle player_xv score_count ticker (readIORef el_ref) (writeIORef el_ref) (readIORef need_to_create_plateform_ref) (writeIORef need_to_create_plateform_ref)
+            updateCycle cycle ticker
+    
+            dom <- getDom score
+            score_count <- readIORef score_count_ref
+            set dom ["innerHTML" =: printf "Score %d" (round score_count :: Int)]
+            
+            y <- getSpriteY player
+            when (y > game_height) $ do
+              pauseTicker ticker
+              alert "Game over"
             
             modifyIORef player_xv_ref (+ 0.002)
             modifyIORef score_count_ref (+ 0.08)

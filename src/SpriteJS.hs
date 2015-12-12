@@ -202,6 +202,9 @@ newCycle = ffi "(function(scene,triplets) {return scene.Cycle(triplets);})"
 appendToCycle :: Ptr Cycle -> Ptr Sprite -> IO ()
 appendToCycle = ffi "(function(cycle,sprite) {cycle.addSprite(sprite);})"
 
+updateCycle :: Ptr Cycle -> Ptr Ticker -> IO ()
+updateCycle = ffi "(function(cycle,ticker) {cycle.next(ticker.lastTicksElapsed);})"
+
 
 -- the Int argument is undocumented. maybe the target fps?
 newTicker :: Ptr Scene -> Int -> (Ptr Ticker -> IO ()) -> IO (Ptr Ticker)
@@ -221,18 +224,3 @@ getLastTicksElapsed = ffi "(function(ticker) {return ticker.lastTicksElapsed;})"
 
 getCurrentTick :: Ptr Ticker -> IO Int
 getCurrentTick = ffi "(function(ticker) {return ticker.currentTick;})"
-
-
-rest :: Int -> Int -> Ptr Scene -> Ptr Layer -> Ptr Layer -> Ptr Sprite -> Ptr Sprite -> Ptr SpriteList -> Ptr Sprite -> Ptr Input -> Ptr Cycle -> Double -> Double -> Ptr Ticker -> IO (Ptr Sprite) -> (Ptr Sprite -> IO ()) -> IO Bool -> (Bool -> IO ()) -> IO ()
-rest = ffi
-    "(function(game_width,game_height,scene,back,front,score,bottom,elements,player,input,cycle,player_xv,score_count,ticker,read_el,write_el,read_need_to_create_plateform,write_need_to_create_plateform) { \
-    \         cycle.next(ticker.lastTicksElapsed);                                                                                 \
-    \                                                                                                                              \
-    \         score.dom.innerHTML = 'Score '+Math.round(score_count);                                                              \
-    \                                                                                                                              \
-    \         if(player.y > game_height) {                                                                                         \
-    \             ticker.pause();                                                                                                  \
-    \             alert(\"Game over\");                                                                                              \
-    \             return;                                                                                                          \
-    \         }                                                                                                                    \
-    \})"
