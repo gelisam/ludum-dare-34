@@ -4,6 +4,7 @@ import Haste.DOM
 import Haste.Foreign
 
 import SpriteJS
+import WindowJS
 
 
 visual_guide :: IO ()
@@ -25,15 +26,15 @@ main :: IO ()
 main = do
     putStrLn "it begins!"
     
-    setDebug True
-    w <- windowWidth
-    h <- windowHeight
-    scene <- newScene w h False
-    loadImages scene ["ground.png", "tiles.png"] $ do
-      setMainCallback scene $ do
-        surface <- newScrollingSurface scene
-        updateSurface surface
-      loadMap scene "map.json"
+    scene <- newScene 400 400 False
+    loadImages scene ["img/bird.png"] $ do
+      setTimeout 100 $ do
+        bird <- newSprite scene "img/bird.png"
+        setSpritePosition bird 200 200
+        moveSpriteBy bird (-10) (-10)
+        rotateSpriteBy bird (1.0/6)
+        setSpriteScale bird 1.5
+        setSpriteOpacity bird 0.8
+        updateSprite bird
     
-    -- visual_guide  -- sprites but no tiles
     console_log "done."
