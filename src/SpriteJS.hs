@@ -226,14 +226,6 @@ getCurrentTick = ffi "(function(ticker) {return ticker.currentTick;})"
 rest :: Int -> Int -> Ptr Scene -> Ptr Layer -> Ptr Layer -> Ptr Sprite -> Ptr Sprite -> Ptr SpriteList -> Ptr Sprite -> Ptr Input -> Ptr Cycle -> Double -> Double -> Ptr Ticker -> IO (Ptr Sprite) -> (Ptr Sprite -> IO ()) -> IO Bool -> (Bool -> IO ()) -> IO ()
 rest = ffi
     "(function(game_width,game_height,scene,back,front,score,bottom,elements,player,input,cycle,player_xv,score_count,ticker,read_el,write_el,read_need_to_create_plateform,write_need_to_create_plateform) { \
-    \         if(read_need_to_create_plateform() && Math.random() < 0.1) {                                                                \
-    \             var height = 32 + (Math.random() * 96);                                                                          \
-    \             var width = 64 + (Math.random() * 128);                                                                          \
-    \             var bottom = scene.Sprite('img/crate.png', {layer:back, w:width, h:height, x:game_width, y:game_height-height}); \
-    \             bottom.update();                                                                                                 \
-    \             elements.add(bottom);                                                                                            \
-    \         }                                                                                                                    \
-    \                                                                                                                              \
     \         cycle.next(ticker.lastTicksElapsed);                                                                                 \
     \                                                                                                                              \
     \         score.dom.innerHTML = 'Score '+Math.round(score_count);                                                              \

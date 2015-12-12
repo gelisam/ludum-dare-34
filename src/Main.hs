@@ -7,6 +7,7 @@ import Haste.Foreign
 import Haste.Prim
 
 import JSRef
+import Random
 import SpriteJS
 import WindowJS
 
@@ -108,6 +109,17 @@ main = do
               w <- getSpriteWidth el
               when (x + w < 0) $ do
                 removeFromSpriteList elements el
+            
+            r <- readIORef need_to_create_plateform_ref
+            rand <- randomRIO (0.0, 1.0::Double)
+            when (r && rand < 0.1) $ do
+              height <- randomRIO (32, 32 + 96)
+              width  <- randomRIO (64, 64 + 128)
+              bottom <- newSprite back "img/crate.png"
+              setSpriteSize bottom width height
+              setSpritePosition bottom game_width (game_height-height)
+              updateSprite bottom
+              appendToSpriteList elements bottom
             
             rest game_width game_height scene back front score bottom elements player input cycle player_xv score_count ticker (readIORef el_ref) (writeIORef el_ref) (readIORef need_to_create_plateform_ref) (writeIORef need_to_create_plateform_ref)
             
