@@ -2,6 +2,7 @@ module GameState where
 
 import Haste.Prim
 
+import AnimatedSprite
 import Entities
 import SpriteJS
 
@@ -14,7 +15,7 @@ data PlayerStatus
 
 data GameState = GameState
   { playerStatus :: PlayerStatus
-  , playerSprite :: Ptr Sprite
+  , playerSprite :: Ptr AnimatedSprite
   , playerHeight :: Double
   , bestPlayerHeight :: Double
   , futureEntities :: [OffScreenEntity]

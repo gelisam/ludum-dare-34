@@ -50,12 +50,15 @@ updateSurface = ffi "(function(surface) {surface.update();})"
 
 class CanHoldSprite a where
     newEmptySprite :: Ptr a -> IO (Ptr Sprite)
+    getScene :: Ptr a -> IO (Ptr Scene)
 
 instance CanHoldSprite Scene where
     newEmptySprite = ffi "(function(scene) {return scene.Sprite(false);})"
+    getScene = return
 
 instance CanHoldSprite Layer where
     newEmptySprite = ffi "(function(layer) {return layer.Sprite(false);})"
+    getScene = getLayerScene
 
 newSprite :: CanHoldSprite a => Ptr a -> JSString -> IO (Ptr Sprite)
 newSprite parent image = do
@@ -151,6 +154,9 @@ isPointIn = ffi "(function(sprite,x,y) {return sprite.isPointIn(x,y);})"
 -- the documentation doesn't say what the name is for, is it even used?
 newLayer :: Ptr Scene -> JSString -> IO (Ptr Layer)
 newLayer = ffi "(function(scene,name) {return scene.Layer(name);})"
+
+getLayerScene :: Ptr Layer -> IO (Ptr Scene)
+getLayerScene = ffi "(function(layer) {return layer.scene;})"
 
 
 class HasDOM a where

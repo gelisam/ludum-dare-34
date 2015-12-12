@@ -7,6 +7,7 @@ import Haste.Foreign
 import Haste.Prim
 import Text.Printf
 
+import AnimatedSprite
 import Entities
 import GameState
 import JSRef
@@ -25,9 +26,28 @@ birdPixelsPerSecond = 100
 playerPixelsPerSecond = 100
 
 
+newPlayerSprite :: CanHoldSprite a => Ptr a -> IO AnimatedSprite
+newPlayerSprite parent = do
+      sprite <- newSprite parent "img/character.png"
+      setSpriteSize sprite 28 52
+      setSpriteXYScale sprite (-1) 1
+      
+      scene <- getScene parent
+      cycle <- newCycle scene [ (3, 3, 5)
+                              , (33, 3, 5)
+                              , (63, 3, 5)
+                              , (93, 3, 5)
+                              , (123, 3, 5)
+                              , (153, 3, 5)
+                              , (183, 3, 5)
+                              ]
+      appendToCycle cycle sprite
+      
+      return (AnimatedSprite sprite cycle)
+
 -- TODO: use a random balloon image instead
-newBalloon :: CanHoldSprite a => Ptr a -> IO (Ptr Sprite)
-newBalloon parent = do
+newBalloonSprite :: CanHoldSprite a => Ptr a -> IO (Ptr Sprite)
+newBalloonSprite parent = do
     balloon <- newEmptySprite parent
     setSpriteSize balloon 20 20
     
@@ -44,7 +64,7 @@ main = do
     loadImages scene ["img/character.png"] $ do
       front <- newLayer scene "front"
       
-      balloon <- newBalloon front
+      balloon <- newBalloonSprite front
       setSpritePosition balloon 100 100
       updateSprite balloon
       
@@ -56,20 +76,8 @@ main = do
       dom <- getDom score
       set dom [attr "id" =: "score"]
       
-      player <- newSprite front "img/character.png"
-      setSpritePosition player 40 200
-      setSpriteSize player 28 52
-      setSpriteXYScale player (-1) 1
-      
-      cycle <- newCycle scene [ (3, 3, 5)
-                              , (33, 3, 5)
-                              , (63, 3, 5)
-                              , (93, 3, 5)
-                              , (123, 3, 5)
-                              , (153, 3, 5)
-                              , (183, 3, 5)
-                              ]
-      appendToCycle cycle player
+      player <- newPlayerSprite front
+      setSpritePosition (aSprite player) 40 200
       
       player_xv_ref <- newIORef 2.5
       score_count_ref <- newIORef 0.0
@@ -78,18 +86,16 @@ main = do
         player_xv <- readIORef player_xv_ref
         score_count <- readIORef score_count_ref
         
-        modifyJSRef (yVelocity player) (+ gravity)
-        applyVelocity player
+        modifyJSRef (yVelocity (aSprite player)) (+ gravity)
+        applyVelocity (aSprite player)
         
-        updateSprite player
-        
-        updateCycle cycle ticker
+        updateAnimatedSprite player ticker
 
         dom <- getDom score
         score_count <- readIORef score_count_ref
         set dom ["innerHTML" =: printf "Score %d" (round score_count :: Int)]
         
-        y <- getSpriteY player
+        y <- getSpriteY (aSprite player)
         when (y > game_height) $ do
           pauseTicker ticker
           alert "Game over"
