@@ -17,8 +17,8 @@ main :: IO ()
 main = do
     putStrLn "it begins!"
     
-    let game_height = 480
     let game_width = 640
+    let game_height = 920
     scene <- newScene game_width game_height True
     loadImages scene ["img/character.png", "img/crate.png"] $ do
       back <- newLayer scene "backround"
