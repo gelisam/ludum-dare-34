@@ -11,9 +11,9 @@ type Animation a = Double -> a
 linear :: (Num a, Fractional a) => a -> a -> Animation a
 linear initialValue unitsPerSecond t = initialValue + realToFrac t * unitsPerSecond
 
-bounce :: (Real a, Fractional a) => (a, a) -> Animation a -> Animation a
-bounce (lo, hi) anim t | x' < half_period = x'
-                       | otherwise        = period - x'
+bounce :: (Real a, Fractional a) => (a, a) -> Animation a -> Animation (a, Bool)
+bounce (lo, hi) anim t | x' < half_period = (x', False)
+                       | otherwise        = (period - x', True)
   where
     half_period = hi - lo
     period = 2 * half_period

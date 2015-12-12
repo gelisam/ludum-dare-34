@@ -24,7 +24,7 @@ game_width = 640
 game_height :: Num a => a
 game_height = 920
 
-gravity :: Fractional a => a
+gravity :: Double
 gravity = 0 -- 0.5
 
 fps :: Num a => a
@@ -36,21 +36,30 @@ birdPixelsPerSecond = 100
 playerPixelsPerSecond :: Num a => a
 playerPixelsPerSecond = 100
 
-birdScale :: Num a => a
+birdScale :: Double
 birdScale = 1
 
-birdWidth :: Num a => a
+birdImageWidth :: Num a => a
+birdImageWidth = 128
+
+birdImageHeight :: Num a => a
+birdImageHeight = 128
+
+birdWidth :: Double
 birdWidth = birdScale * 128
+
+birdHeight :: Double
+birdHeight = birdScale * 128
 
 
 computeSeconds :: Int -> Double
 computeSeconds ticks = fromIntegral ticks / fps
 
-birdX :: OffScreenBird -> Animation Int
-birdX = birdInitialX
+birdState :: OffScreenBird -> Animation (Int, Bool)
+birdState = birdInitialX
     >>> flip linear birdPixelsPerSecond 
     >>> bounce (0, game_width - birdWidth)
-    >>> fmap floor
+    >>> fmap (first floor)
 
 
 newPlayerSprite :: CanHoldSprite a => Ptr a -> IO AnimatedSprite
@@ -72,6 +81,18 @@ newPlayerSprite parent = do
       
       return (AnimatedSprite sprite cycle)
 
+newBirdSprite :: CanHoldSprite a => Ptr a -> IO AnimatedSprite
+newBirdSprite parent = do
+    sprite <- newSprite parent "img/flying-enemy.png"
+    setSpriteSize sprite birdImageWidth birdImageHeight
+    setSpriteScale sprite birdScale
+    
+    scene <- getScene parent
+    cycle <- newCycle scene [(i*128, 0, 5) | i <- [0..10]]
+    appendToCycle cycle sprite
+    
+    return (AnimatedSprite sprite cycle)
+
 -- TODO: use a random balloon image instead
 newBalloonSprite :: CanHoldSprite a => Ptr a -> IO (Ptr Sprite)
 newBalloonSprite parent = do
@@ -84,16 +105,15 @@ newBalloonSprite parent = do
     set dom [style "background-color" =: "red"]
     
     return balloon
+    
 
 main :: IO ()
 main = do
     scene <- newScene game_width game_height True
-    loadImages scene ["img/character.png"] $ do
+    loadImages scene ["img/character.png", "img/flying-enemy.png"] $ do
       front <- newLayer scene "front"
       
-      balloon <- newBalloonSprite front
-      setSpritePosition balloon 100 100
-      updateSprite balloon
+      bird <- newBirdSprite front
       
       score <- newEmptySprite front
       setSpriteSize score 200 100
@@ -113,9 +133,11 @@ main = do
         ticks <- getCurrentTick ticker
         let t = computeSeconds ticks
         
-        let x = birdX (OffScreenBird 0 0) t
-        setSpritePosition balloon x 100
-        updateSprite balloon
+        let (x, isGoingLeft) = birdState (OffScreenBird 0 0) t
+        let sx = if isGoingLeft then 1 else -1
+        setSpritePosition (aSprite bird) x 100
+        setSpriteXYScale (aSprite bird) sx 1
+        updateAnimatedSprite bird ticker
         
         player_xv <- readIORef player_xv_ref
         score_count <- readIORef score_count_ref
