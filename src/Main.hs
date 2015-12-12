@@ -4,6 +4,7 @@ import Data.IORef
 import Haste
 import Haste.DOM
 import Haste.Foreign
+import Haste.Prim
 
 import JSRef
 import SpriteJS
@@ -89,7 +90,10 @@ main = do
                   modifyJSRef (yVelocity player) (subtract 0.2)
             updateSprite player
             
-            rest game_width game_height scene back front score bottom elements player input cycle player_xv score_count ticker
+            el_ref <- newIORef (undefined :: Ptr Sprite)
+            need_to_create_plateform_ref <- newIORef True
+            
+            rest game_width game_height scene back front score bottom elements player input cycle player_xv score_count ticker (readIORef el_ref) (writeIORef el_ref) (readIORef need_to_create_plateform_ref) (writeIORef need_to_create_plateform_ref)
             
             modifyIORef player_xv_ref (+ 0.002)
             modifyIORef score_count_ref (+ 0.08)
