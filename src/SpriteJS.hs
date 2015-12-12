@@ -5,6 +5,8 @@ import Haste.DOM
 import Haste.Foreign
 import Haste.Prim
 
+import JSRef
+
 
 newtype Scene = Scene JSAny
 newtype Surface = Surface JSAny
@@ -87,6 +89,24 @@ setSpriteScale sprite factor = setSpriteXYScale sprite factor factor
 setSpriteOpacity :: Ptr Sprite -> Double -> IO ()
 setSpriteOpacity = ffi "(function(sprite,opacity) {sprite.setOpacity(opacity);})"
 
+xVelocity :: Ptr Sprite -> JSRef Double
+xVelocity sprite = JSRef
+  { readJSRef  = ffi "(function(sprite) {return sprite.xv;})" sprite
+  , writeJSRef = ffi "(function(sprite,xv) {sprite.xv = xv;})" sprite
+  }
+
+yVelocity :: Ptr Sprite -> JSRef Double
+yVelocity sprite = JSRef
+  { readJSRef  = ffi "(function(sprite) {return sprite.yv;})" sprite
+  , writeJSRef = ffi "(function(sprite,yv) {sprite.yv = yv;})" sprite
+  }
+
+applyXVelocity :: Ptr Sprite -> IO ()
+applyXVelocity = ffi "(function(sprite) {return sprite.applyXVelocity();})"
+
+applyYVelocity :: Ptr Sprite -> IO ()
+applyYVelocity = ffi "(function(sprite) {return sprite.applyYVelocity();})"
+
 updateSprite :: Ptr Sprite -> IO ()
 updateSprite = ffi "(function(sprite) {sprite.update();})"
 
@@ -135,12 +155,9 @@ runTicker :: Ptr Ticker -> IO ()
 runTicker = ffi "(function(ticker) {ticker.run();})"
 
 
-rest :: Int -> Int -> Ptr Scene -> Ptr Layer -> Ptr Layer -> Ptr Sprite -> Ptr Sprite -> Ptr SpriteList -> Ptr Sprite -> Ptr Input -> Ptr Cycle -> Float -> Float -> Ptr Ticker -> IO ()
+rest :: Int -> Int -> Ptr Scene -> Ptr Layer -> Ptr Layer -> Ptr Sprite -> Ptr Sprite -> Ptr SpriteList -> Ptr Sprite -> Ptr Input -> Ptr Cycle -> Double -> Double -> Ptr Ticker -> IO ()
 rest = ffi
     "(function(game_width,game_height,scene,back,front,score,bottom,elements,player,input,cycle,player_xv,score_count,ticker) { \
-    \         var gravity = 0.5;                                                                                                         \
-    \         player.yv += gravity;                                                                                                \
-    \         player.applyXVelocity();                                                                                             \
     \         if(player.collidesWithArray(elements)) {                                                                             \
     \             ticker.pause();                                                                                                  \
     \             alert(\"Game over!\");                                                                                           \

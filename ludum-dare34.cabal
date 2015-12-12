@@ -15,7 +15,8 @@ cabal-version:       >=1.10
 
 executable ludum-dare34
   main-is:             Main.hs
-  other-modules:       SpriteJS
+  other-modules:       JSRef
+                     , SpriteJS
                      , WindowJS
   other-extensions:    OverloadedStrings
   build-depends:       base >=4.8 && <4.9

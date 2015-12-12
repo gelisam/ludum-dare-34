@@ -4,6 +4,7 @@ import Haste
 import Haste.DOM
 import Haste.Foreign
 
+import JSRef
 import SpriteJS
 import WindowJS
 
@@ -58,6 +59,11 @@ main = do
       ticker <- newTicker scene 25 $ \ticker -> do
         player_xv <- readIORef player_xv_ref
         score_count <- readIORef score_count_ref
+        
+        let gravity = 0.5
+        modifyJSRef (yVelocity player) (+ gravity)
+        applyXVelocity player
+        
         rest game_width game_height scene back front score bottom elements player input cycle player_xv score_count ticker
         modifyIORef player_xv_ref (+ 0.002)
         modifyIORef score_count_ref (+ 0.08)
