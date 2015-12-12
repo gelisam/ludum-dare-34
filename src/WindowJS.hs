@@ -13,3 +13,6 @@ windowHeight = ffi "(function() {return window.innerHeight;})"
 
 setTimeout :: Int -> IO () -> IO ()
 setTimeout = ffi "(function(millis,callback) {window.setTimeout(callback,millis);})"
+
+console_log :: Ptr a -> IO ()
+console_log = ffi "(function(x) {console.log(x);})"

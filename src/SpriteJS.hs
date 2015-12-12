@@ -110,6 +110,15 @@ applyYVelocity = ffi "(function(sprite) {return sprite.applyYVelocity();})"
 updateSprite :: Ptr Sprite -> IO ()
 updateSprite = ffi "(function(sprite) {sprite.update();})"
 
+collidesWith :: Ptr Sprite -> Ptr Sprite -> IO Bool
+collidesWith = ffi "(function(sprite,sprite2) {return sprite.collidesWith(sprite2);})"
+
+collidesWithArray :: Ptr Sprite -> [Ptr Sprite] -> IO (Maybe (Ptr Sprite))
+collidesWithArray = ffi "(function(sprite,sprites) {return sprite.collidesWith(sprites) || null;})"
+
+collidesWithSpriteList :: Ptr Sprite -> Ptr SpriteList -> IO (Maybe (Ptr Sprite))
+collidesWithSpriteList = ffi "(function(sprite,sprites) {return sprite.collidesWith(sprites) || null;})"
+
 
 -- the documentation doesn't say what the name is for, is it even used?
 newLayer :: Ptr Scene -> JSString -> IO (Ptr Layer)
@@ -154,16 +163,22 @@ newTicker = ffi "(function(scene,fps,callback) {return scene.Ticker(fps,callback
 runTicker :: Ptr Ticker -> IO ()
 runTicker = ffi "(function(ticker) {ticker.run();})"
 
+pauseTicker :: Ptr Ticker -> IO ()
+pauseTicker = ffi "(function(ticker) {ticker.pause();})"
+
+resumeTicker :: Ptr Ticker -> IO ()
+resumeTicker = ffi "(function(ticker) {ticker.resume();})"
+
+getLastTicksElapsed :: Ptr Ticker -> IO Int
+getLastTicksElapsed = ffi "(function(ticker) {return ticker.lastTicksElapsed;})"
+
+getCurrentTick :: Ptr Ticker -> IO Int
+getCurrentTick = ffi "(function(ticker) {return ticker.currentTick;})"
+
 
 rest :: Int -> Int -> Ptr Scene -> Ptr Layer -> Ptr Layer -> Ptr Sprite -> Ptr Sprite -> Ptr SpriteList -> Ptr Sprite -> Ptr Input -> Ptr Cycle -> Double -> Double -> Ptr Ticker -> IO ()
 rest = ffi
     "(function(game_width,game_height,scene,back,front,score,bottom,elements,player,input,cycle,player_xv,score_count,ticker) { \
-    \         if(player.collidesWithArray(elements)) {                                                                             \
-    \             ticker.pause();                                                                                                  \
-    \             alert(\"Game over!\");                                                                                           \
-    \             return;                                                                                                          \
-    \         }                                                                                                                    \
-    \                                                                                                                              \
     \         player.applyYVelocity();                                                                                             \
     \         if(player.collidesWithArray(elements)) {                                                                             \
     \             player.reverseYVelocity();                                                                                       \

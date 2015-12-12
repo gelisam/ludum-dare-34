@@ -64,9 +64,16 @@ main = do
         modifyJSRef (yVelocity player) (+ gravity)
         applyXVelocity player
         
-        rest game_width game_height scene back front score bottom elements player input cycle player_xv score_count ticker
-        modifyIORef player_xv_ref (+ 0.002)
-        modifyIORef score_count_ref (+ 0.08)
+        r <- collidesWithSpriteList player elements
+        case r of
+          Just otherSprite -> do
+            pauseTicker ticker
+            alert "Game over!"
+          Nothing -> do
+            rest game_width game_height scene back front score bottom elements player input cycle player_xv score_count ticker
+            
+            modifyIORef player_xv_ref (+ 0.002)
+            modifyIORef score_count_ref (+ 0.08)
       runTicker ticker
     
     putStrLn "done."
