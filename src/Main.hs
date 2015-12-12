@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+import Control.Monad
 import Data.IORef
 import Haste
 import Haste.DOM
@@ -77,12 +78,15 @@ main = do
               Just otherSprite -> do
                 unapplyYVelocity player
                 writeJSRef (yVelocity player) 0
-                -- if(input.mousedown || input.keydown) {                                                                           \
-                modifyJSRef (yVelocity player) (subtract 10)
+                
+                r <- (||) <$> mousedown input <*> keydown input
+                when r $ do
+                  modifyJSRef (yVelocity player) (subtract 10)
               Nothing -> do
                 return ()
-                -- if(input.mousedown || input.keydown) {                                                                           \
-                modifyJSRef (yVelocity player) (subtract 0.2)
+                r <- (||) <$> mousedown input <*> keydown input
+                when r $ do
+                  modifyJSRef (yVelocity player) (subtract 0.2)
             updateSprite player
             
             rest game_width game_height scene back front score bottom elements player input cycle player_xv score_count ticker

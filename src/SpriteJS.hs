@@ -154,6 +154,12 @@ appendToSpriteList = ffi "(function(list,sprite) {list.add(sprite);})"
 newInput :: Ptr Scene -> IO (Ptr Input)
 newInput = ffi "(function(scene) {return scene.Input();})"
 
+keydown :: Ptr Input -> IO Bool
+keydown = ffi "(function(input) {return input.keydown;})"
+
+mousedown :: Ptr Input -> IO Bool
+mousedown = ffi "(function(input) {return input.mousedown;})"
+
 
 newCycle :: Ptr Scene -> [(Int,Int,Int)] -> IO (Ptr Cycle)
 newCycle = ffi "(function(scene,triplets) {return scene.Cycle(triplets);})"
