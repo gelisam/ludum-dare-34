@@ -114,10 +114,10 @@ collidesWith :: Ptr Sprite -> Ptr Sprite -> IO Bool
 collidesWith = ffi "(function(sprite,sprite2) {return sprite.collidesWith(sprite2);})"
 
 collidesWithArray :: Ptr Sprite -> [Ptr Sprite] -> IO (Maybe (Ptr Sprite))
-collidesWithArray = ffi "(function(sprite,sprites) {return sprite.collidesWith(sprites) || null;})"
+collidesWithArray = ffi "(function(sprite,sprites) {return sprite.collidesWithArray(sprites) || null;})"
 
 collidesWithSpriteList :: Ptr Sprite -> Ptr SpriteList -> IO (Maybe (Ptr Sprite))
-collidesWithSpriteList = ffi "(function(sprite,sprites) {return sprite.collidesWith(sprites) || null;})"
+collidesWithSpriteList = ffi "(function(sprite,sprites) {return sprite.collidesWithArray(sprites) || null;})"
 
 
 -- the documentation doesn't say what the name is for, is it even used?
