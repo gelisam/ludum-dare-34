@@ -107,6 +107,12 @@ applyXVelocity = ffi "(function(sprite) {return sprite.applyXVelocity();})"
 applyYVelocity :: Ptr Sprite -> IO ()
 applyYVelocity = ffi "(function(sprite) {return sprite.applyYVelocity();})"
 
+unapplyXVelocity :: Ptr Sprite -> IO ()
+unapplyXVelocity = ffi "(function(sprite) {return sprite.reverseXVelocity();})"
+
+unapplyYVelocity :: Ptr Sprite -> IO ()
+unapplyYVelocity = ffi "(function(sprite) {return sprite.reverseYVelocity();})"
+
 updateSprite :: Ptr Sprite -> IO ()
 updateSprite = ffi "(function(sprite) {sprite.update();})"
 
@@ -179,21 +185,6 @@ getCurrentTick = ffi "(function(ticker) {return ticker.currentTick;})"
 rest :: Int -> Int -> Ptr Scene -> Ptr Layer -> Ptr Layer -> Ptr Sprite -> Ptr Sprite -> Ptr SpriteList -> Ptr Sprite -> Ptr Input -> Ptr Cycle -> Double -> Double -> Ptr Ticker -> IO ()
 rest = ffi
     "(function(game_width,game_height,scene,back,front,score,bottom,elements,player,input,cycle,player_xv,score_count,ticker) { \
-    \         player.applyYVelocity();                                                                                             \
-    \         if(player.collidesWithArray(elements)) {                                                                             \
-    \             player.reverseYVelocity();                                                                                       \
-    \             player.yv = 0;                                                                                                   \
-    \             if(input.mousedown || input.keydown) {                                                                           \
-    \                 player.yv = -10;                                                                                             \
-    \             }                                                                                                                \
-    \         } else {                                                                                                             \
-    \             if(input.mousedown || input.keydown) {                                                                           \
-    \                 player.yv -= 0.2;                                                                                            \
-    \             }                                                                                                                \
-    \         }                                                                                                                    \
-    \                                                                                                                              \
-    \         player.update();                                                                                                     \
-    \                                                                                                                              \
     \         var el;                                                                                                              \
     \         var need_to_create_plateform = true;                                                                                 \
     \         while(el = elements.iterate()) {                                                                                     \

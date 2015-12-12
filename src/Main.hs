@@ -70,6 +70,21 @@ main = do
             pauseTicker ticker
             alert "Game over!"
           Nothing -> do
+            applyYVelocity player
+            
+            r <- collidesWithSpriteList player elements
+            case r of
+              Just otherSprite -> do
+                unapplyYVelocity player
+                writeJSRef (yVelocity player) 0
+                -- if(input.mousedown || input.keydown) {                                                                           \
+                modifyJSRef (yVelocity player) (subtract 10)
+              Nothing -> do
+                return ()
+                -- if(input.mousedown || input.keydown) {                                                                           \
+                modifyJSRef (yVelocity player) (subtract 0.2)
+            updateSprite player
+            
             rest game_width game_height scene back front score bottom elements player input cycle player_xv score_count ticker
             
             modifyIORef player_xv_ref (+ 0.002)
