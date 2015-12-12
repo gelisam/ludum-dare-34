@@ -19,6 +19,62 @@ game_height = 920
 gravity = 0.5
 
 
+data PlayerStatus
+  = Falling
+  | Floating Int -- number of balloons
+  deriving (Show, Eq)
+
+
+-- an entity is anything the player can interact with
+--   - a balloon
+--   - a bird
+
+
+data OffScreenBalloon = OffScreenBalloon
+  { balloonX :: Double
+  , balloonHeight :: Double
+  }
+  deriving (Show, Eq)
+
+data OnScreenBalloon = OnScreenBalloon
+  { balloonSprite :: Ptr Sprite
+  , offScreenBalloon :: OffScreenBalloon
+  }
+
+
+data OffScreenBird = OffScreenBird
+  { birdInitialX :: Double
+  , birdHeight :: Double
+  }
+  deriving (Show, Eq)
+
+data OnScreenBird = OnScreenBird
+  { birdSprite :: Ptr Sprite
+  , offScreenBird :: OffScreenBird
+  }
+
+
+data OnScreenEntity
+  = OnScreenBalloonEntity OnScreenBalloon
+  | OnScreenBirEntityd OnScreenBird
+
+data OffScreenEntity
+  = OffScreenBalloonEntity OffScreenBalloon
+  | OffScreenBirdEntity OffScreenBird
+  deriving (Show, Eq)
+
+
+data GameState = GameState
+  { playerStatus :: PlayerStatus
+  , playerSprite :: Ptr Sprite
+  , playerHeight :: Double
+  , bestPlayerHeight :: Double
+  , futureEntities :: [OffScreenEntity]
+  , onScreenEntities :: [OnScreenEntity]
+  , missedEntities :: [OffScreenEntity]
+  }
+
+
 -- TODO: use a random balloon image instead
 newBalloon :: CanHoldSprite a => Ptr a -> IO (Ptr Sprite)
 newBalloon parent = do
