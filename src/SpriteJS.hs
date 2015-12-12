@@ -13,6 +13,7 @@ newtype Layer = Layer JSAny
 newtype SpriteList = SpriteList JSAny
 newtype Input = Input JSAny
 newtype Cycle = Cycle JSAny
+newtype Ticker = Ticker JSAny
 
 
 setDebug :: Bool -> IO ()
@@ -126,15 +127,17 @@ appendToCycle :: Ptr Cycle -> Ptr Sprite -> IO ()
 appendToCycle = ffi "(function(cycle,sprite) {cycle.addSprite(sprite);})"
 
 
-rest :: Int -> Int -> Ptr Scene -> Ptr Layer -> Ptr Layer -> Ptr Sprite -> Ptr Sprite -> Ptr SpriteList -> Ptr Sprite -> Ptr Input -> Ptr Cycle -> IO ()
+-- the Int argument is undocumented. maybe the target fps?
+newTicker :: Ptr Scene -> Int -> (Ptr Ticker -> IO ()) -> IO (Ptr Ticker)
+newTicker = ffi "(function(scene,fps,callback) {return scene.Ticker(fps,callback);})"
+
+runTicker :: Ptr Ticker -> IO ()
+runTicker = ffi "(function(ticker) {ticker.run();})"
+
+
+rest :: Int -> Int -> Ptr Scene -> Ptr Layer -> Ptr Layer -> Ptr Sprite -> Ptr Sprite -> Ptr SpriteList -> Ptr Sprite -> Ptr Input -> Ptr Cycle -> Float -> Float -> Ptr Ticker -> IO ()
 rest = ffi
-    "(function(game_width,game_height,scene,back,front,score,bottom,elements,player,input,cycle) { \
-    \     var virtual_player_x = player.x;                                                                                         \
-    \     var player_xv = 2.5;                                                                                                     \
-    \     var score_count = 0;                                                                                                     \
-    \                                                                                                                              \
-    \     function paint() {                                                                                                       \
-    \                                                                                                                              \
+    "(function(game_width,game_height,scene,back,front,score,bottom,elements,player,input,cycle,player_xv,score_count,ticker) { \
     \         var gravity = 0.5;                                                                                                         \
     \         player.yv += gravity;                                                                                                \
     \         player.applyXVelocity();                                                                                             \
@@ -185,8 +188,6 @@ rest = ffi
     \                                                                                                                              \
     \         cycle.next(ticker.lastTicksElapsed);                                                                                 \
     \                                                                                                                              \
-    \         player_xv += 0.002;                                                                                                  \
-    \         score_count += 0.08;                                                                                                 \
     \         score.dom.innerHTML = 'Score '+Math.round(score_count);                                                              \
     \                                                                                                                              \
     \         if(player.y > game_height) {                                                                                         \
@@ -194,8 +195,4 @@ rest = ffi
     \             alert(\"Game over\");                                                                                              \
     \             return;                                                                                                          \
     \         }                                                                                                                    \
-    \     };                                                                                                                       \
-    \                                                                                                                              \
-    \     var ticker = scene.Ticker(25, paint);                                                                                    \
-    \     ticker.run();                                                                                                            \
     \})"

@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+import Data.IORef
 import Haste
 import Haste.DOM
 import Haste.Foreign
@@ -51,6 +52,15 @@ main = do
                               ]
       appendToCycle cycle player
       
-      rest game_width game_height scene back front score bottom elements player input cycle
+      player_xv_ref <- newIORef 2.5
+      score_count_ref <- newIORef 0.0
+      
+      ticker <- newTicker scene 25 $ \ticker -> do
+        player_xv <- readIORef player_xv_ref
+        score_count <- readIORef score_count_ref
+        rest game_width game_height scene back front score bottom elements player input cycle player_xv score_count ticker
+        modifyIORef player_xv_ref (+ 0.002)
+        modifyIORef score_count_ref (+ 0.08)
+      runTicker ticker
     
     putStrLn "done."
