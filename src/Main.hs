@@ -93,6 +93,22 @@ main = do
             el_ref <- newIORef (undefined :: Ptr Sprite)
             need_to_create_plateform_ref <- newIORef True
             
+            forEachSprite elements $ \el -> do
+              player_xv <- readIORef player_xv_ref
+              writeJSRef (xVelocity el) (-player_xv)
+              
+              applyVelocity el
+              updateSprite el
+              
+              r <- isPointIn el game_width (game_height - 20)
+              when r $ do
+                writeIORef need_to_create_plateform_ref False
+              
+              x <- getSpriteX el
+              w <- getSpriteWidth el
+              when (x + w < 0) $ do
+                removeFromSpriteList elements el
+            
             rest game_width game_height scene back front score bottom elements player input cycle player_xv score_count ticker (readIORef el_ref) (writeIORef el_ref) (readIORef need_to_create_plateform_ref) (writeIORef need_to_create_plateform_ref)
             
             modifyIORef player_xv_ref (+ 0.002)

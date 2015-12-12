@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module SpriteJS where
 
+import Control.Monad
 import Haste.DOM
 import Haste.Foreign
 import Haste.Prim
@@ -62,6 +63,18 @@ newSprite parent image = do
     setSpriteImage sprite image
     return sprite
 
+getSpriteX :: Ptr Sprite -> IO Int
+getSpriteX = ffi "(function(sprite) {return sprite.x;})"
+
+getSpriteY :: Ptr Sprite -> IO Int
+getSpriteY = ffi "(function(sprite) {return sprite.y;})"
+
+getSpriteWidth :: Ptr Sprite -> IO Int
+getSpriteWidth = ffi "(function(sprite) {return sprite.w;})"
+
+getSpriteHeight :: Ptr Sprite -> IO Int
+getSpriteHeight = ffi "(function(sprite) {return sprite.h;})"
+
 setSpriteImage :: Ptr Sprite -> JSString -> IO ()
 setSpriteImage = ffi "(function(sprite,image) {sprite.loadImg(image);})"
 
@@ -107,11 +120,17 @@ applyXVelocity = ffi "(function(sprite) {return sprite.applyXVelocity();})"
 applyYVelocity :: Ptr Sprite -> IO ()
 applyYVelocity = ffi "(function(sprite) {return sprite.applyYVelocity();})"
 
+applyVelocity :: Ptr Sprite -> IO ()
+applyVelocity = ffi "(function(sprite) {return sprite.applyVelocity();})"
+
 unapplyXVelocity :: Ptr Sprite -> IO ()
 unapplyXVelocity = ffi "(function(sprite) {return sprite.reverseXVelocity();})"
 
 unapplyYVelocity :: Ptr Sprite -> IO ()
 unapplyYVelocity = ffi "(function(sprite) {return sprite.reverseYVelocity();})"
+
+unapplyVelocity :: Ptr Sprite -> IO ()
+unapplyVelocity = ffi "(function(sprite) {return sprite.reverseVelocity();})"
 
 updateSprite :: Ptr Sprite -> IO ()
 updateSprite = ffi "(function(sprite) {sprite.update();})"
@@ -124,6 +143,9 @@ collidesWithArray = ffi "(function(sprite,sprites) {return sprite.collidesWithAr
 
 collidesWithSpriteList :: Ptr Sprite -> Ptr SpriteList -> IO (Maybe (Ptr Sprite))
 collidesWithSpriteList = ffi "(function(sprite,sprites) {return sprite.collidesWithArray(sprites) || null;})"
+
+isPointIn :: Ptr Sprite -> Int -> Int -> IO Bool
+isPointIn = ffi "(function(sprite,x,y) {return sprite.isPointIn(x,y);})"
 
 
 -- the documentation doesn't say what the name is for, is it even used?
@@ -149,6 +171,19 @@ newSpriteList = ffi "(function() {return sjs.SpriteList();})"
 
 appendToSpriteList :: Ptr SpriteList -> Ptr Sprite -> IO ()
 appendToSpriteList = ffi "(function(list,sprite) {list.add(sprite);})"
+
+removeFromSpriteList :: Ptr SpriteList -> Ptr Sprite -> IO ()
+removeFromSpriteList = ffi "(function(list,sprite) {list.remove(sprite);})"
+
+nextSprite :: Ptr SpriteList -> IO (Maybe (Ptr Sprite))
+nextSprite = ffi "(function(list) {return list.iterate() || null;})"
+
+forEachSprite :: Ptr SpriteList -> (Ptr Sprite -> IO ()) -> IO ()
+forEachSprite list body = do
+    r <- nextSprite list
+    forM_ r $ \sprite -> do
+      body sprite
+      forEachSprite list body
 
 
 newInput :: Ptr Scene -> IO (Ptr Input)
@@ -191,21 +226,6 @@ getCurrentTick = ffi "(function(ticker) {return ticker.currentTick;})"
 rest :: Int -> Int -> Ptr Scene -> Ptr Layer -> Ptr Layer -> Ptr Sprite -> Ptr Sprite -> Ptr SpriteList -> Ptr Sprite -> Ptr Input -> Ptr Cycle -> Double -> Double -> Ptr Ticker -> IO (Ptr Sprite) -> (Ptr Sprite -> IO ()) -> IO Bool -> (Bool -> IO ()) -> IO ()
 rest = ffi
     "(function(game_width,game_height,scene,back,front,score,bottom,elements,player,input,cycle,player_xv,score_count,ticker,read_el,write_el,read_need_to_create_plateform,write_need_to_create_plateform) { \
-    \         var el;                                                                                                                                                              \
-    \         while(el = ((function() {write_el(elements.iterate()); return read_el();})())) {                                                                                     \
-    \             el.xv = -player_xv;                                                                                              \
-    \             el.applyVelocity();                                                                                              \
-    \             el.update();                                                                                                     \
-    \                                                                                                                              \
-    \             if(el.isPointIn(game_width, game_height-20)) {                                                                   \
-    \                 write_need_to_create_plateform(false);                                                                            \
-    \             }                                                                                                                \
-    \                                                                                                                              \
-    \             if(el.x + el.w < 0) {                                                                                            \
-    \                 elements.remove(el)                                                                                          \
-    \             }                                                                                                                \
-    \         }                                                                                                                    \
-    \                                                                                                                              \
     \         if(read_need_to_create_plateform() && Math.random() < 0.1) {                                                                \
     \             var height = 32 + (Math.random() * 96);                                                                          \
     \             var width = 64 + (Math.random() * 128);                                                                          \
