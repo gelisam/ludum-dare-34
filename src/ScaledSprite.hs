@@ -47,7 +47,7 @@ data ScaledSprite = ScaledSprite
   }
 
 newScaledSprite :: CanHoldSprite a
-                => Ptr a
+                => a
                 -> JSString
                 -> Int -> Int
                 -> Double

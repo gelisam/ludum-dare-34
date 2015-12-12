@@ -12,7 +12,7 @@ data AnimatedSprite = AnimatedSprite
   }
 
 newAnimatedSprite :: CanHoldSprite a
-                  => Ptr a
+                  => a
                   -> JSString  -- ^ image file
                   -> Int  -- ^ original image width
                   -> Int  -- ^ original image height

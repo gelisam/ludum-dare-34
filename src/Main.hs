@@ -62,15 +62,15 @@ birdState = birdInitialX
         >>> bounce (birdWidth / 2, game_width - birdWidth / 2)
 
 
-newPlayerSprite :: CanHoldSprite a => Ptr a -> IO AnimatedSprite
+newPlayerSprite :: CanHoldSprite a => a -> IO AnimatedSprite
 newPlayerSprite parent = newAnimatedSprite parent "img/character.png" 30 52 7 5 1.0
 
-newBirdSprite :: CanHoldSprite a => Ptr a -> IO AnimatedSprite
+newBirdSprite :: CanHoldSprite a => a -> IO AnimatedSprite
 newBirdSprite parent = newAnimatedSprite parent "img/flying-enemy.png"
                                          birdImageWidth birdImageHeight 11 5 birdScale
 
 -- TODO: use a random balloon image instead
-newBalloonSprite :: CanHoldSprite a => Ptr a -> IO (Ptr Sprite)
+newBalloonSprite :: CanHoldSprite a => a -> IO (Ptr Sprite)
 newBalloonSprite parent = do
     balloon <- newEmptySprite parent
     setSpriteSize balloon 20 20

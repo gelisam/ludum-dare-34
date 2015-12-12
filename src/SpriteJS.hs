@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE FlexibleInstances, OverloadedStrings #-}
 module SpriteJS where
 
 import Control.Monad
@@ -49,18 +49,18 @@ updateSurface = ffi "(function(surface) {surface.update();})"
 
 
 class CanHoldSprite a where
-    newEmptySprite :: Ptr a -> IO (Ptr Sprite)
-    getScene :: Ptr a -> IO (Ptr Scene)
+    newEmptySprite :: a -> IO (Ptr Sprite)
+    getScene :: a -> IO (Ptr Scene)
 
-instance CanHoldSprite Scene where
+instance CanHoldSprite (Ptr Scene) where
     newEmptySprite = ffi "(function(scene) {return scene.Sprite(false);})"
     getScene = return
 
-instance CanHoldSprite Layer where
+instance CanHoldSprite (Ptr Layer) where
     newEmptySprite = ffi "(function(layer) {return layer.Sprite(false);})"
     getScene = getLayerScene
 
-newSprite :: CanHoldSprite a => Ptr a -> JSString -> IO (Ptr Sprite)
+newSprite :: CanHoldSprite a => a -> JSString -> IO (Ptr Sprite)
 newSprite parent image = do
     sprite <- newEmptySprite parent
     setSpriteImage sprite image
@@ -160,15 +160,15 @@ getLayerScene = ffi "(function(layer) {return layer.scene;})"
 
 
 class HasDOM a where
-    getDom :: Ptr a -> IO Elem
+    getDom :: a -> IO Elem
 
-instance HasDOM Scene where
+instance HasDOM (Ptr Scene) where
     getDom = ffi "(function(scene) {return scene.dom;})"
 
-instance HasDOM Layer where
+instance HasDOM (Ptr Layer) where
     getDom = ffi "(function(layer) {return layer.dom;})"
 
-instance HasDOM Sprite where
+instance HasDOM (Ptr Sprite) where
     getDom = ffi "(function(sprite) {return sprite.dom;})"
 
 
