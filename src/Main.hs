@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+import Control.Arrow
 import Control.Monad
 import Data.IORef
 import Haste
@@ -7,6 +8,7 @@ import Haste.Foreign
 import Haste.Prim
 import Text.Printf
 
+import Animation
 import AnimatedSprite
 import Entities
 import GameState
@@ -16,14 +18,39 @@ import SpriteJS
 import WindowJS
 
 
+game_width :: Num a => a
 game_width = 640
+
+game_height :: Num a => a
 game_height = 920
 
-gravity = 0.5
+gravity :: Fractional a => a
+gravity = 0 -- 0.5
 
+fps :: Num a => a
 fps = 25
+
+birdPixelsPerSecond :: Num a => a
 birdPixelsPerSecond = 100
+
+playerPixelsPerSecond :: Num a => a
 playerPixelsPerSecond = 100
+
+birdScale :: Num a => a
+birdScale = 1
+
+birdWidth :: Num a => a
+birdWidth = birdScale * 128
+
+
+computeSeconds :: Int -> Double
+computeSeconds ticks = fromIntegral ticks / fps
+
+birdX :: OffScreenBird -> Animation Int
+birdX = birdInitialX
+    >>> flip linear birdPixelsPerSecond 
+    >>> bounce (0, game_width - birdWidth)
+    >>> fmap floor
 
 
 newPlayerSprite :: CanHoldSprite a => Ptr a -> IO AnimatedSprite
@@ -83,6 +110,13 @@ main = do
       score_count_ref <- newIORef 0.0
       
       ticker <- newTicker scene fps $ \ticker -> do
+        ticks <- getCurrentTick ticker
+        let t = computeSeconds ticks
+        
+        let x = birdX (OffScreenBird 0 0) t
+        setSpritePosition balloon x 100
+        updateSprite balloon
+        
         player_xv <- readIORef player_xv_ref
         score_count <- readIORef score_count_ref
         

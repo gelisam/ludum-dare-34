@@ -16,6 +16,7 @@ cabal-version:       >=1.10
 executable ludum-dare34
   main-is:             Main.hs
   other-modules:       AnimatedSprite
+                     , Animation
                      , Entities
                      , GameState
                      , JSRef
