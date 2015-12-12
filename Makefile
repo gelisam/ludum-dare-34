@@ -14,7 +14,7 @@ test: build
 	python -m SimpleHTTPServer
 
 build: dist/Main.js
-dist/Main.js: .cabal-sandbox/sandbox-exists src/Main.hs
+dist/Main.js: .cabal-sandbox/sandbox-exists src/*.hs
 	haste-cabal install
 
 rebuild:
