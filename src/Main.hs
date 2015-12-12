@@ -35,8 +35,7 @@ newBalloon parent = do
 main :: IO ()
 main = do
     scene <- newScene game_width game_height True
-    loadImages scene ["img/character.png", "img/crate.png"] $ do
-      back <- newLayer scene "backround"
+    loadImages scene ["img/character.png"] $ do
       front <- newLayer scene "front"
       
       balloon <- newBalloon front
@@ -51,20 +50,10 @@ main = do
       dom <- getDom score
       set dom [attr "id" =: "score"]
       
-      bottom <- newSprite back "img/crate.png"
-      setSpriteSize bottom game_width 64
-      setSpritePosition bottom 0 (game_height-64)
-      updateSprite bottom
-      
-      elements <- newSpriteList
-      appendToSpriteList elements bottom
-      
       player <- newSprite front "img/character.png"
       setSpritePosition player 40 200
       setSpriteSize player 28 52
       setSpriteXYScale player (-1) 1
-      
-      input <- newInput scene
       
       cycle <- newCycle scene [ (3, 3, 5)
                               , (33, 3, 5)
@@ -84,73 +73,21 @@ main = do
         score_count <- readIORef score_count_ref
         
         modifyJSRef (yVelocity player) (+ gravity)
-        applyXVelocity player
+        applyVelocity player
         
-        r <- collidesWithSpriteList player elements
-        case r of
-          Just otherSprite -> do
-            pauseTicker ticker
-            alert "Game over!"
-          Nothing -> do
-            applyYVelocity player
-            
-            r <- collidesWithSpriteList player elements
-            case r of
-              Just otherSprite -> do
-                unapplyYVelocity player
-                writeJSRef (yVelocity player) 0
-                
-                r <- (||) <$> mousedown input <*> keydown input
-                when r $ do
-                  modifyJSRef (yVelocity player) (subtract 10)
-              Nothing -> do
-                return ()
-                r <- (||) <$> mousedown input <*> keydown input
-                when r $ do
-                  modifyJSRef (yVelocity player) (subtract 0.2)
-            updateSprite player
-            
-            el_ref <- newIORef (undefined :: Ptr Sprite)
-            need_to_create_plateform_ref <- newIORef True
-            
-            forEachSprite elements $ \el -> do
-              player_xv <- readIORef player_xv_ref
-              writeJSRef (xVelocity el) (-player_xv)
-              
-              applyVelocity el
-              updateSprite el
-              
-              r <- isPointIn el game_width (game_height - 20)
-              when r $ do
-                writeIORef need_to_create_plateform_ref False
-              
-              x <- getSpriteX el
-              w <- getSpriteWidth el
-              when (x + w < 0) $ do
-                removeFromSpriteList elements el
-            
-            r <- readIORef need_to_create_plateform_ref
-            rand <- randomRIO (0.0, 1.0::Double)
-            when (r && rand < 0.1) $ do
-              height <- randomRIO (32, 32 + 96)
-              width  <- randomRIO (64, 64 + 128)
-              bottom <- newSprite back "img/crate.png"
-              setSpriteSize bottom width height
-              setSpritePosition bottom game_width (game_height-height)
-              updateSprite bottom
-              appendToSpriteList elements bottom
-            
-            updateCycle cycle ticker
-    
-            dom <- getDom score
-            score_count <- readIORef score_count_ref
-            set dom ["innerHTML" =: printf "Score %d" (round score_count :: Int)]
-            
-            y <- getSpriteY player
-            when (y > game_height) $ do
-              pauseTicker ticker
-              alert "Game over"
-            
-            modifyIORef player_xv_ref (+ 0.002)
-            modifyIORef score_count_ref (+ 0.08)
+        updateSprite player
+        
+        updateCycle cycle ticker
+
+        dom <- getDom score
+        score_count <- readIORef score_count_ref
+        set dom ["innerHTML" =: printf "Score %d" (round score_count :: Int)]
+        
+        y <- getSpriteY player
+        when (y > game_height) $ do
+          pauseTicker ticker
+          alert "Game over"
+        
+        modifyIORef player_xv_ref (+ 0.002)
+        modifyIORef score_count_ref (+ 0.08)
       runTicker ticker
