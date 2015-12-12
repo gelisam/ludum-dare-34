@@ -13,6 +13,19 @@ import SpriteJS
 import WindowJS
 
 
+-- TODO: use a random balloon image instead
+newBalloon :: CanHoldSprite a => Ptr a -> IO (Ptr Sprite)
+newBalloon parent = do
+    balloon <- newEmptySprite parent
+    setSpriteSize balloon 20 20
+    
+    dom <- getDom balloon
+    set dom [style "border" =: "2px solid #880000"]
+    set dom [style "border-radius" =: "10px"]
+    set dom [style "background-color" =: "red"]
+    
+    return balloon
+
 main :: IO ()
 main = do
     putStrLn "it begins!"
@@ -23,6 +36,10 @@ main = do
     loadImages scene ["img/character.png", "img/crate.png"] $ do
       back <- newLayer scene "backround"
       front <- newLayer scene "front"
+      
+      balloon <- newBalloon front
+      setSpritePosition balloon 100 100
+      updateSprite balloon
       
       score <- newEmptySprite front
       setSpriteSize score 200 100
