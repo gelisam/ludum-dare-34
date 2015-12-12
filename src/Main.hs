@@ -37,7 +37,7 @@ playerPixelsPerSecond :: Num a => a
 playerPixelsPerSecond = 100
 
 birdScale :: Double
-birdScale = 1
+birdScale = 0.8
 
 birdImageWidth :: Num a => a
 birdImageWidth = 128
@@ -57,9 +57,9 @@ computeSeconds ticks = fromIntegral ticks / fps
 
 birdState :: OffScreenBird -> Animation (Int, Bool)
 birdState = birdInitialX
-    >>> flip linear birdPixelsPerSecond 
-    >>> bounce (0, game_width - birdWidth)
-    >>> fmap (first floor)
+      >>> flip linear birdPixelsPerSecond
+      >>> bounce (birdWidth / 2, game_width - birdWidth / 2)
+      >>> fmap (first floor)
 
 
 newPlayerSprite :: CanHoldSprite a => Ptr a -> IO AnimatedSprite
@@ -135,8 +135,8 @@ main = do
         
         let (x, isGoingLeft) = birdState (OffScreenBird 0 0) t
         let sx = if isGoingLeft then 1 else -1
-        setSpritePosition (aSprite bird) x 100
-        setSpriteXYScale (aSprite bird) sx 1
+        setSpritePosition (aSprite bird) (x - birdImageWidth `div` 2) (100 - birdImageHeight `div` 2)
+        setSpriteXYScale (aSprite bird) (sx * birdScale) birdScale
         updateAnimatedSprite bird ticker
         
         player_xv <- readIORef player_xv_ref
