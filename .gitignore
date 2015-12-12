@@ -2,3 +2,4 @@
 cabal.sandbox.config
 dist/
 ludum-dare34.html
+deploy_target

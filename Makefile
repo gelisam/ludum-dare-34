@@ -2,7 +2,7 @@
 #   http://haste-lang.org/downloads/
 
 all: build
-.PHONY: all init test build rebuild
+.PHONY: all init test build rebuild deploy
 
 init: .cabal-sandbox/sandbox-exists
 .cabal-sandbox/sandbox-exists:
@@ -20,3 +20,6 @@ dist/Main.js: .cabal-sandbox/sandbox-exists src/Main.hs
 rebuild:
 	touch src/Main.hs
 	$(MAKE) build
+
+deploy: build
+	scp dist/Main.js `cat deploy_target`
