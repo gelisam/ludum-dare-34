@@ -13,6 +13,12 @@ import SpriteJS
 import WindowJS
 
 
+game_width = 640
+game_height = 920
+
+gravity = 0.5
+
+
 -- TODO: use a random balloon image instead
 newBalloon :: CanHoldSprite a => Ptr a -> IO (Ptr Sprite)
 newBalloon parent = do
@@ -28,10 +34,6 @@ newBalloon parent = do
 
 main :: IO ()
 main = do
-    putStrLn "it begins!"
-    
-    let game_width = 640
-    let game_height = 920
     scene <- newScene game_width game_height True
     loadImages scene ["img/character.png", "img/crate.png"] $ do
       back <- newLayer scene "backround"
@@ -81,7 +83,6 @@ main = do
         player_xv <- readIORef player_xv_ref
         score_count <- readIORef score_count_ref
         
-        let gravity = 0.5
         modifyJSRef (yVelocity player) (+ gravity)
         applyXVelocity player
         
@@ -153,5 +154,3 @@ main = do
             modifyIORef player_xv_ref (+ 0.002)
             modifyIORef score_count_ref (+ 0.08)
       runTicker ticker
-    
-    putStrLn "done."
