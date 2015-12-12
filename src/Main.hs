@@ -14,6 +14,7 @@ import Entities
 import GameState
 import JSRef
 import Random
+import ScaledSprite
 import SpriteJS
 import WindowJS
 
@@ -55,43 +56,18 @@ birdHeight = birdScale * 128
 computeSeconds :: Int -> Double
 computeSeconds ticks = fromIntegral ticks / fps
 
-birdState :: OffScreenBird -> Animation (Int, Bool)
+birdState :: OffScreenBird -> Animation (Double, Bool)
 birdState = birdInitialX
-      >>> flip linear birdPixelsPerSecond
-      >>> bounce (birdWidth / 2, game_width - birdWidth / 2)
-      >>> fmap (first floor)
+        >>> flip linear birdPixelsPerSecond
+        >>> bounce (birdWidth / 2, game_width - birdWidth / 2)
 
 
 newPlayerSprite :: CanHoldSprite a => Ptr a -> IO AnimatedSprite
-newPlayerSprite parent = do
-      sprite <- newSprite parent "img/character.png"
-      setSpriteSize sprite 28 52
-      setSpriteXYScale sprite (-1) 1
-      
-      scene <- getScene parent
-      cycle <- newCycle scene [ (3, 3, 5)
-                              , (33, 3, 5)
-                              , (63, 3, 5)
-                              , (93, 3, 5)
-                              , (123, 3, 5)
-                              , (153, 3, 5)
-                              , (183, 3, 5)
-                              ]
-      appendToCycle cycle sprite
-      
-      return (AnimatedSprite sprite cycle)
+newPlayerSprite parent = newAnimatedSprite parent "img/character.png" 30 52 7 5 1.0
 
 newBirdSprite :: CanHoldSprite a => Ptr a -> IO AnimatedSprite
-newBirdSprite parent = do
-    sprite <- newSprite parent "img/flying-enemy.png"
-    setSpriteSize sprite birdImageWidth birdImageHeight
-    setSpriteScale sprite birdScale
-    
-    scene <- getScene parent
-    cycle <- newCycle scene [(i*128, 0, 5) | i <- [0..10]]
-    appendToCycle cycle sprite
-    
-    return (AnimatedSprite sprite cycle)
+newBirdSprite parent = newAnimatedSprite parent "img/flying-enemy.png"
+                                         birdImageWidth birdImageHeight 11 5 birdScale
 
 -- TODO: use a random balloon image instead
 newBalloonSprite :: CanHoldSprite a => Ptr a -> IO (Ptr Sprite)
@@ -124,7 +100,7 @@ main = do
       set dom [attr "id" =: "score"]
       
       player <- newPlayerSprite front
-      setSpritePosition (aSprite player) 40 200
+      setScaledSpritePosition (aSprite player) 40 200
       
       player_xv_ref <- newIORef 2.5
       score_count_ref <- newIORef 0.0
@@ -135,15 +111,15 @@ main = do
         
         let (x, isGoingLeft) = birdState (OffScreenBird 0 0) t
         let sx = if isGoingLeft then 1 else -1
-        setSpritePosition (aSprite bird) (x - birdImageWidth `div` 2) (100 - birdImageHeight `div` 2)
-        setSpriteXYScale (aSprite bird) (sx * birdScale) birdScale
+        setScaledSpritePosition (aSprite bird) x 100
+        setScaledSpriteXYScale (aSprite bird) sx 1
         updateAnimatedSprite bird ticker
         
         player_xv <- readIORef player_xv_ref
         score_count <- readIORef score_count_ref
         
-        modifyJSRef (yVelocity (aSprite player)) (+ gravity)
-        applyVelocity (aSprite player)
+        modifyJSRef (yVelocity (sSprite (aSprite player))) (+ gravity)
+        applyVelocity (sSprite (aSprite player))
         
         updateAnimatedSprite player ticker
 
@@ -151,7 +127,7 @@ main = do
         score_count <- readIORef score_count_ref
         set dom ["innerHTML" =: printf "Score %d" (round score_count :: Int)]
         
-        y <- getSpriteY (aSprite player)
+        y <- getSpriteY (sSprite (aSprite player))
         when (y > game_height) $ do
           pauseTicker ticker
           alert "Game over"

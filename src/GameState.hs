@@ -15,7 +15,7 @@ data PlayerStatus
 
 data GameState = GameState
   { playerStatus :: PlayerStatus
-  , playerSprite :: Ptr AnimatedSprite
+  , playerSprite :: AnimatedSprite
   , playerHeight :: Double
   , bestPlayerHeight :: Double
   , futureEntities :: [OffScreenEntity]
