@@ -26,6 +26,31 @@ main = do
       dom <- getDom score
       set dom [attr "id" =: "score"]
       
-      rest game_width game_height scene back front score
+      bottom <- newSprite back "img/crate.png"
+      setSpriteSize bottom game_width 64
+      setSpritePosition bottom 0 (game_height-64)
+      updateSprite bottom
+      
+      elements <- newSpriteList
+      appendToSpriteList elements bottom
+      
+      player <- newSprite front "img/character.png"
+      setSpritePosition player 40 200
+      setSpriteSize player 28 52
+      setSpriteXYScale player (-1) 1
+      
+      input <- newInput scene
+      
+      cycle <- newCycle scene [ (3, 3, 5)
+                              , (33, 3, 5)
+                              , (63, 3, 5)
+                              , (93, 3, 5)
+                              , (123, 3, 5)
+                              , (153, 3, 5)
+                              , (183, 3, 5)
+                              ]
+      appendToCycle cycle player
+      
+      rest game_width game_height scene back front score bottom elements player input cycle
     
     putStrLn "done."

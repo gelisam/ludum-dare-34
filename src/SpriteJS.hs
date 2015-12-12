@@ -10,6 +10,9 @@ newtype Scene = Scene JSAny
 newtype Surface = Surface JSAny
 newtype Sprite = Sprite JSAny
 newtype Layer = Layer JSAny
+newtype SpriteList = SpriteList JSAny
+newtype Input = Input JSAny
+newtype Cycle = Cycle JSAny
 
 
 setDebug :: Bool -> IO ()
@@ -105,30 +108,27 @@ instance HasDOM Sprite where
     getDom = ffi "(function(sprite) {return sprite.dom;})"
 
 
-rest :: Int -> Int -> Ptr Scene -> Ptr Layer -> Ptr Layer -> Ptr Sprite -> IO ()
+newSpriteList :: IO (Ptr SpriteList)
+newSpriteList = ffi "(function() {return sjs.SpriteList();})"
+
+appendToSpriteList :: Ptr SpriteList -> Ptr Sprite -> IO ()
+appendToSpriteList = ffi "(function(list,sprite) {list.add(sprite);})"
+
+
+newInput :: Ptr Scene -> IO (Ptr Input)
+newInput = ffi "(function(scene) {return scene.Input();})"
+
+
+newCycle :: Ptr Scene -> [(Int,Int,Int)] -> IO (Ptr Cycle)
+newCycle = ffi "(function(scene,triplets) {return scene.Cycle(triplets);})"
+
+appendToCycle :: Ptr Cycle -> Ptr Sprite -> IO ()
+appendToCycle = ffi "(function(cycle,sprite) {cycle.addSprite(sprite);})"
+
+
+rest :: Int -> Int -> Ptr Scene -> Ptr Layer -> Ptr Layer -> Ptr Sprite -> Ptr Sprite -> Ptr SpriteList -> Ptr Sprite -> Ptr Input -> Ptr Cycle -> IO ()
 rest = ffi
-    "(function(game_width,game_height,scene,back,front,score) {                                                                                                                 \
-    \     var bottom = scene.Sprite('img/crate.png', {layer:back, w:game_width, h:64, x:0, y:game_height-64});                     \
-    \     bottom.update();                                                                                                         \
-    \     var elements = sjs.SpriteList();                                                                                         \
-    \     elements.add(bottom);                                                                                                    \
-    \                                                                                                                              \
-    \     var player = scene.Sprite('img/character.png', front);                                                                   \
-    \     player.position(40, 200);                                                                                                \
-    \     player.size(28, 52);                                                                                                     \
-    \     player.scale(-1, 1);                                                                                                     \
-    \                                                                                                                              \
-    \     var input  = scene.Input();                                                                                              \
-    \                                                                                                                              \
-    \     var cycle = scene.Cycle([[3, 3, 5],                                                                                      \
-    \                                [33, 3, 5],                                                                                   \
-    \                                [63, 3, 5],                                                                                   \
-    \                                [93, 3, 5],                                                                                   \
-    \                                [123, 3, 5],                                                                                  \
-    \                                [153, 3, 5],                                                                                  \
-    \                                [183, 3, 5]]);                                                                                \
-    \     cycle.addSprite(player);                                                                                                 \
-    \                                                                                                                              \
+    "(function(game_width,game_height,scene,back,front,score,bottom,elements,player,input,cycle) { \
     \     var virtual_player_x = player.x;                                                                                         \
     \     var player_xv = 2.5;                                                                                                     \
     \     var score_count = 0;                                                                                                     \
