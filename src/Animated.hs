@@ -1,7 +1,7 @@
 -- A SpriteLike decorator for animating sprites according to one of three values:
 --   
 --   * number of seconds since the beginning of the game (not counting paused time)
---   * how high above the ground the camera is (measured in pixels)
+--   * how high above the ground the camera is (measured in meters)
 --   * how old the character is (measured in the same units as the height, except it
 --     doesn't go down when the character falls)
 -- 
@@ -79,7 +79,9 @@ newParallax :: SpriteLike a
             -> IO a
             -> IO (Animated a)
 newParallax anim = newAnimated $ \sprite t h _ -> do
-    let y = anim h
+    let meters = h / 100  -- divide by 56 to make the building scroll at the same rate as
+                          -- the entities, or by a larger number to make it scroll slower
+    let y = anim meters
     writeJSRef (spriteYPosition sprite) y
 
 instance SpriteLike a => SpriteLike (Animated a) where

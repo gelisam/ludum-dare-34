@@ -173,7 +173,7 @@ main = do
       ticker <- newTicker scene fps $ \ticker -> do
         ticks <- getCurrentTick ticker
         let t = computeSeconds ticks
-        let h = t  -- for now, the screen rises 1 unit per second. Wait, is that 1 pixel?
+        let h = 56 * t  -- for now, the screen rises 1 unit per second. Wait, is that 1 pixel?
         let a = h  -- for now, the character ages at the same speed as the screen rises.
         
         updateSprite bird (t, h, a, (ticker, ()))
