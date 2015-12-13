@@ -69,6 +69,11 @@ newBirdSprite :: CanHoldSprite a => a -> IO AnimatedSprite
 newBirdSprite parent = newAnimatedSprite parent "img/flying-enemy.png"
                                          birdImageWidth birdImageHeight 11 5 birdScale
 
+newParallax :: CanHoldSprite a => a -> JSString -> IO (Ptr Sprite)
+newParallax parent image = do
+   parallax <- newSprite parent image
+   return parallax 
+
 -- TODO: use a random balloon image instead
 newBalloonSprite :: CanHoldSprite a => a -> IO (Ptr Sprite)
 newBalloonSprite parent = do
@@ -81,13 +86,37 @@ newBalloonSprite parent = do
     set dom [style "background-color" =: "red"]
     
     return balloon
-    
 
+    
+    
 main :: IO ()
 main = do
     scene <- newScene game_width game_height True
     loadImages scene ["img/character.png", "img/flying-enemy.png"] $ do
+      back2 <- newLayer scene "back-2"
+      back <- newLayer scene "back-1"
       front <- newLayer scene "front"
+
+--      city <- newSprite front "img/city-zoomed-out.png"
+--      setSpriteSize city 640 797
+--      setSpritePosition city 0 123
+--      updateSprite city
+      mountain <- newSprite back2 "img/mountain-shadows.png"
+      setSpriteSize mountain 640 920
+      setSpritePosition mountain 0 0
+      updateSprite mountain
+
+
+      building <- newSprite back "img/city-zoomed-in.png"
+      setSpriteSize building 640 2856
+      setSpritePosition building 0 (920 - 2856)
+      updateSprite building
+
+      building_shadow <- newSprite back2 "img/city-shadow.png"
+      setSpriteSize building_shadow 640 920
+      setSpritePosition building_shadow 0 0
+      updateSprite building_shadow
+
       
       bird <- newBirdSprite front
       
@@ -114,6 +143,19 @@ main = do
         setScaledSpritePosition (aSprite bird) x 100
         setScaledSpriteXYScale (aSprite bird) sx 1
         updateAnimatedSprite bird ticker
+        
+        -- Update first parallax layer
+        setSpritePosition building 0 (round (linear (920 - 2856) 56 t :: Double)) 
+        updateSprite building
+
+        -- debugging to estimate cues
+        print t
+
+        setSpritePosition building_shadow 0 (round ((delayed 10 (linear 0 18) t) :: Double))
+        updateSprite building_shadow
+
+        setSpritePosition mountain 0 (round ((delayed 10 (linear 0 9) t) :: Double))
+        updateSprite mountain
         
         player_xv <- readIORef player_xv_ref
         score_count <- readIORef score_count_ref
