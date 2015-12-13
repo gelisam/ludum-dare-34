@@ -9,6 +9,7 @@ import Haste.Prim
 import Animated
 import Animation
 import Backgrounds
+import Collidable
 import Constants
 import Centered
 import Entities
@@ -30,7 +31,7 @@ data PlayerDirection
   | East
   deriving (Show, Eq)
 
-type PlayerSprite = Wrapped (Looping (Scaled (Centered NormalSprite)))
+type PlayerSprite = Wrapped (Collidable (Looping (Scaled (Centered NormalSprite))))
 
 data GameState = GameState
   { gameScene      :: Ptr Scene
@@ -81,6 +82,7 @@ birdAnimation offScreenBird = fmap go xAndIsGoingLeft
 newPlayerSprite :: CanHoldSprite a => a -> IO PlayerSprite
 newPlayerSprite parent = do
     sprite <- newWrapped game_width
+            $ newCollidable parent (13 - 5 - playerImageWidth `div` 2) (67 - 5 - playerImageHeight `div` 2) 10 10
             $ newLooping parent playerImageWidth 1 5
             $ newScaled 1.0
             $ newCentered playerImageWidth playerImageHeight
