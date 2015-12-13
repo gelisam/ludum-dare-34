@@ -4,7 +4,9 @@ module Backgrounds where
 --   - a parallax layer
 --   - a cloud
 
+import Control.Arrow
 import Haste
+import Haste.Prim
 
 import Animated
 import Animation
@@ -24,6 +26,9 @@ data OnScreenParallaxLayer = OnScreenParallaxLayer
   , offScreenParallaxLayer :: OffScreenParallaxLayer
   }
 
+drawParallaxLayer :: OnScreenParallaxLayer -> UpdateParam ParallaxSprite -> IO ()
+drawParallaxLayer = parallaxSprite >>> updateSprite
+
 
 type CloudSprite = Animated (Centered NormalSprite)
 
@@ -38,6 +43,9 @@ data OnScreenCloud = OnScreenCloud
   , offScreenCloud :: OffScreenCloud
   }
 
+drawCloud :: OnScreenCloud -> UpdateParam CloudSprite -> IO ()
+drawCloud = cloudSprite >>> updateSprite
+
 
 data OnScreenBackground
   = ParallaxOn OnScreenParallaxLayer
@@ -46,3 +54,10 @@ data OnScreenBackground
 data OffScreenBackground
   = ParallaxOff OffScreenParallaxLayer
   | CloudOff    OffScreenCloud
+
+
+drawOnScreenBackground :: Double -> Double -> Double -> Ptr Ticker -> OnScreenBackground -> IO ()
+drawOnScreenBackground t h a ticker = go
+  where
+    go (ParallaxOn parallaxLayer) = drawParallaxLayer parallaxLayer (t, h, a, ())
+    go (CloudOn    cloud        ) = drawCloud         cloud         (t, h, a, ())

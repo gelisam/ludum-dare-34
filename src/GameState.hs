@@ -1,6 +1,8 @@
+{-# LANGUAGE RecordWildCards #-}
 module GameState where
 
 import Control.Arrow
+import Haste.Prim
 
 import Backgrounds
 import Entities
@@ -65,3 +67,9 @@ shuffleZipper isOffVisible isOnVisible putOnScreen takeOffScreen h (below, curre
     newlyBelow   = filter (isOnVisible h >>> (== LT)) current
     stillCurrent = filter (isOnVisible h >>> (== EQ)) current
     newlyAbove   = filter (isOnVisible h >>> (== GT)) current
+
+drawGameState :: Double -> Double -> Double -> Ptr Ticker -> GameState -> IO ()
+drawGameState t h a ticker (GameState {..}) = do
+    updateSprite playerSprite (ticker, ())
+    mapM_ (drawOnScreenEntity     t h a ticker) currentEntities
+    mapM_ (drawOnScreenBackground t h a ticker) currentBackgrounds

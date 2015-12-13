@@ -70,8 +70,8 @@ newBalloonSprite parent = do
     set dom [style "background-color" =: "red"]
     
     return balloon
-    
-    
+
+
 main :: IO ()
 main = do
     scene <- newScene game_width game_height True

@@ -4,6 +4,9 @@ module Entities where
 --   - a balloon
 --   - a bird
 
+import Control.Arrow
+import Haste.Prim
+
 import Animated
 import Centered
 import Looping
@@ -24,6 +27,9 @@ data OnScreenBalloon = OnScreenBalloon
   , offScreenBalloon :: OffScreenBalloon
   }
 
+drawBalloon :: OnScreenBalloon -> UpdateParam BalloonSprite -> IO ()
+drawBalloon = balloonSprite >>> updateSprite
+
 
 type BirdSprite = Animated (Looping (Scaled (Centered NormalSprite)))
 
@@ -38,6 +44,9 @@ data OnScreenBird = OnScreenBird
   , offScreenBird :: OffScreenBird
   }
 
+drawBird :: OnScreenBird -> UpdateParam BirdSprite -> IO ()
+drawBird = birdSprite >>> updateSprite
+
 
 data OnScreenEntity
   = BalloonOn OnScreenBalloon
@@ -47,3 +56,10 @@ data OffScreenEntity
   = BaloonOff OffScreenBalloon
   | BirdOff   OffScreenBird
   deriving (Show, Eq)
+
+
+drawOnScreenEntity :: Double -> Double -> Double -> Ptr Ticker -> OnScreenEntity -> IO ()
+drawOnScreenEntity t h a ticker = go
+  where
+    go (BalloonOn balloon) = drawBalloon balloon (t, h, a, ())
+    go (BirdOn    bird   ) = drawBird    bird    (t, h, a, (ticker, ()))
