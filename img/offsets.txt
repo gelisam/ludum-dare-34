@@ -1,11 +1,9 @@
 ## up.png
 
-unit size: 117px x 300px
-y axis: age
+unit size: 117px * 300px
+y axis: age (1-7)
 x axis: direction in (straight, left, right)
 fixed point offset: point (13, 67) hand holding balloon
-
-There are 7 different ages.
 
 ## ballons.png
 
@@ -15,3 +13,10 @@ x axis: none
 fixed point offset: point (58, 300) ballon cord 
 
 There are 4 different colors
+
+## down.png
+
+unit size: 117px * 300px
+y axis: age (1-7)
+x axis: animation frame (4 stages)
+fixed point offset: none
