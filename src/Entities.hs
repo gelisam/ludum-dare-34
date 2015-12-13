@@ -33,7 +33,7 @@ drawBalloon :: OnScreenBalloon -> UpdateParam BalloonSprite -> IO ()
 drawBalloon = balloonSprite >>> updateSprite
 
 
-type BirdSprite = Animated (Looping (Scaled (Centered NormalSprite)))
+type BirdSprite = Animated (Collidable (Looping (Scaled (Centered NormalSprite))))
 
 data OffScreenBird = OffScreenBird
   { birdInitialX :: Double

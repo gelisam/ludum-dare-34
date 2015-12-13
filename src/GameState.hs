@@ -94,8 +94,9 @@ newPlayerSprite parent = do
 newBirdSprite :: CanHoldSprite a
               => a
               -> OffScreenBird
-              -> IO (Animated (Looping (Scaled (Centered NormalSprite))))
+              -> IO (BirdSprite)
 newBirdSprite parent offScreenBird = newDirectionalMoving (birdAnimation offScreenBird)
+                                   $ newCollidable parent (-32) (-32) 64 64
                                    $ newLooping parent birdImageWidth 11 5
                                    $ newScaled birdScale
                                    $ newCentered birdImageWidth birdImageHeight
