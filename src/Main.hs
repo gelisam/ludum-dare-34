@@ -39,10 +39,10 @@ playerScale :: Double
 playerScale = 1
 
 playerImageWidth :: Num a => a
-playerImageWidth = 30
+playerImageWidth = 117
 
 playerImageHeight :: Num a => a
-playerImageHeight = 52
+playerImageHeight = 300
 
 playerWidth :: Double
 playerWidth = playerScale * playerImageWidth
@@ -90,10 +90,10 @@ birdAnimation offScreenBird = fmap go xAndIsGoingLeft
 
 newPlayerSprite :: CanHoldSprite a => a -> IO (Looping (Scaled (Centered NormalSprite)))
 newPlayerSprite parent = do
-    sprite <- newLooping parent playerImageWidth 7 5
+    sprite <- newLooping parent playerImageWidth 1 5
             $ newScaled 1.0
-            $ newCentered 30 52
-            $ newSprite parent "img/character.png"
+            $ newCentered playerImageWidth playerImageHeight
+            $ newSprite parent "img/up.png"
     writeJSRef (spriteXScale sprite) (-1)
     return sprite
 
@@ -124,7 +124,7 @@ newBalloonSprite parent = do
 main :: IO ()
 main = do
     scene <- newScene game_width game_height True
-    loadImages scene ["img/character.png", "img/flying-enemy.png"] $ do
+    loadImages scene ["img/up.png", "img/flying-enemy.png"] $ do
       back2 <- newLayer scene "back-2"
       back <- newLayer scene "back-1"
       front <- newLayer scene "front"
