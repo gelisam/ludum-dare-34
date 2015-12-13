@@ -268,9 +268,14 @@ newInput = ffi "(function(scene) {return scene.Input();})"
 keydown :: Ptr Input -> IO Bool
 keydown = ffi "(function(input) {return input.keydown;})"
 
+leftdown :: Ptr Input -> IO Bool
+leftdown = ffi "(function(input) {return input.keyboard.left;})"
+
+rightdown :: Ptr Input -> IO Bool
+rightdown = ffi "(function(input) {return input.keyboard.right;})"
+
 mousedown :: Ptr Input -> IO Bool
 mousedown = ffi "(function(input) {return input.mousedown;})"
-
 
 newCycle :: Ptr Scene -> [(Int,Int,Int)] -> IO (Ptr Cycle)
 newCycle = ffi "(function(scene,triplets) {return scene.Cycle(triplets);})"

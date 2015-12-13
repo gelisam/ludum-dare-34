@@ -51,6 +51,8 @@ data GameState = GameState
   , backgroundsBelow   :: [OffScreenBackground]
   , currentBackgrounds :: [OnScreenBackground]
   , backgroundsAbove   :: [OffScreenBackground]
+
+  , input :: Ptr Input
   }
 
 
