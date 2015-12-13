@@ -17,6 +17,7 @@ executable ludum-dare34
   main-is:             Main.hs
   other-modules:       Animated
                      , Animation
+                     , Constants
                      , Centered
                      , Entities
                      , GameState
