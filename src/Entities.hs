@@ -22,7 +22,7 @@ data OnScreenBalloon = OnScreenBalloon
 
 data OffScreenBird = OffScreenBird
   { birdInitialX :: Double
-  , birdHeight   :: Double
+  , birdInitialY :: Double
   }
   deriving (Show, Eq)
 

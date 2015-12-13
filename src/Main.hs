@@ -7,6 +7,7 @@ import Haste.DOM
 import Haste.Foreign
 import Text.Printf
 
+import Animated
 import Animation
 import Centered
 import Entities
@@ -72,10 +73,19 @@ birdHeight = birdScale * birdImageHeight
 computeSeconds :: Int -> Double
 computeSeconds ticks = fromIntegral ticks / fps
 
-birdState :: OffScreenBird -> Animation (Double, Bool)
-birdState = birdInitialX
-        >>> flip linear birdPixelsPerSecond
-        >>> bounce (birdWidth / 2, game_width - birdWidth / 2)
+birdAnimation :: OffScreenBird -> Animation ((Double, Double), Bool)
+birdAnimation offScreenBird = fmap go xAndIsGoingLeft
+  where
+    xAndIsGoingLeft :: Animation (Double, Bool)
+    xAndIsGoingLeft = bounce (birdWidth / 2, game_width - birdWidth / 2)
+                    $ flip linear birdPixelsPerSecond
+                    $ birdInitialX offScreenBird
+    
+    go :: (Double,Bool) -> ((Double, Double), Bool)
+    go (x,isGoingLeft) = ((x,y),isFlipped)
+      where
+        y = birdInitialY offScreenBird
+        isFlipped = not isGoingLeft
 
 
 newPlayerSprite :: CanHoldSprite a => a -> IO (Looping (Scaled (Centered NormalSprite)))
@@ -87,16 +97,15 @@ newPlayerSprite parent = do
     writeJSRef (spriteXScale sprite) (-1)
     return sprite
 
-newBirdSprite :: CanHoldSprite a => a -> IO (Looping (Scaled (Centered NormalSprite)))
-newBirdSprite parent = newLooping parent birdImageWidth 11 5
-                     $ newScaled birdScale
-                     $ newCentered birdImageWidth birdImageHeight
-                     $ newSprite parent "img/flying-enemy.png"
-
-newParallax :: CanHoldSprite a => a -> JSString -> IO NormalSprite
-newParallax parent image = do
-   parallax <- newSprite parent image
-   return parallax 
+newBirdSprite :: CanHoldSprite a
+              => a
+              -> OffScreenBird
+              -> IO (Animated (Looping (Scaled (Centered NormalSprite))))
+newBirdSprite parent offScreenBird = newDirectionalMoving (birdAnimation offScreenBird)
+                                   $ newLooping parent birdImageWidth 11 5
+                                   $ newScaled birdScale
+                                   $ newCentered birdImageWidth birdImageHeight
+                                   $ newSprite parent "img/flying-enemy.png"
 
 -- TODO: use a random balloon image instead
 newBalloonSprite :: CanHoldSprite a => a -> IO NormalSprite
@@ -124,24 +133,18 @@ main = do
 --            $ newSprite front "img/city-zoomed-out.png"
 --      writeJSRef (spritePosition city) (0,123)
 --      updateSprite city ()
-      mountain <- newTopLeftAligned 640 920
+      mountain <- newParallax (delayed 10 $ linear 0 9)
+                $ newTopLeftAligned 640 920
                 $ newSprite back2 "img/mountain-shadows.png"
-      writeJSRef (spritePosition mountain) (0,0)
-      updateSprite mountain ()
-
-
-      building <- newTopLeftAligned 640 2856
+      building <- newParallax (linear (920 - 2856) 56)
+                $ newTopLeftAligned 640 2856
                 $ newSprite back "img/city-zoomed-in.png"
-      writeJSRef (spritePosition building) (0, 920 - 2856)
-      updateSprite building ()
-
-      building_shadow <- newTopLeftAligned 640 920
+      building_shadow <- newParallax (delayed 10 $ linear 0 18)
+                       $ newTopLeftAligned 640 920
                        $ newSprite back2 "img/city-shadow.png"
-      writeJSRef (spritePosition building_shadow) (0,0)
-      updateSprite building_shadow ()
 
       
-      bird <- newBirdSprite front
+      bird <- newBirdSprite front (OffScreenBird 0 0)
       
       score <- newTopLeftAligned 200 100
              $ newEmptySprite front
@@ -170,24 +173,20 @@ main = do
       ticker <- newTicker scene fps $ \ticker -> do
         ticks <- getCurrentTick ticker
         let t = computeSeconds ticks
+        let h = t  -- for now, the screen rises 1 unit per second. Wait, is that 1 pixel?
+        let a = h  -- for now, the character ages at the same speed as the screen rises.
         
-        let (x, isGoingLeft) = birdState (OffScreenBird 0 0) t
-        writeJSRef (spritePosition bird) (x, 100)
-        writeJSRef (spriteXScale bird) (if isGoingLeft then 1 else -1)
-        updateSprite bird (ticker, ())
+        updateSprite bird (t, h, a, (ticker, ()))
         
         -- Update first parallax layer
-        writeJSRef (spriteYPosition building) (linear (920 - 2856) 56 t)
-        updateSprite building ()
+        updateSprite building (t, h, a, ())
 
         -- debugging to estimate cues
         print t
 
-        writeJSRef (spriteYPosition building_shadow) (delayed 10 (linear 0 18) t)
-        updateSprite building_shadow ()
+        updateSprite building_shadow (t, h, a, ())
 
-        writeJSRef (spriteYPosition mountain) (delayed 10 (linear 0 9) t)
-        updateSprite mountain ()
+        updateSprite mountain (t, h, a, ())
         
         player_xv <- readIORef player_xv_ref
         score_count <- readIORef score_count_ref
