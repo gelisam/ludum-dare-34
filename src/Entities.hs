@@ -1,24 +1,31 @@
 module Entities where
 
-import SpriteJS
-
-
--- an entity is anything the player can interact with
+-- an entity is a game object the player can interact with
 --   - a balloon
 --   - a bird
 
+import Animated
+import Centered
+import Looping
+import Scaled
+import SpriteJS
+
+
+type BalloonSprite = Animated (Centered NormalSprite)
 
 data OffScreenBalloon = OffScreenBalloon
-  { balloonX :: Double
-  , balloonHeight :: Double
+  { balloonInitialX :: Double
+  , balloonInitialY :: Double
   }
   deriving (Show, Eq)
 
 data OnScreenBalloon = OnScreenBalloon
-  { balloonSprite    :: NormalSprite
+  { balloonSprite    :: BalloonSprite
   , offScreenBalloon :: OffScreenBalloon
   }
 
+
+type BirdSprite = Animated (Looping (Scaled (Centered NormalSprite)))
 
 data OffScreenBird = OffScreenBird
   { birdInitialX :: Double
@@ -27,16 +34,16 @@ data OffScreenBird = OffScreenBird
   deriving (Show, Eq)
 
 data OnScreenBird = OnScreenBird
-  { birdSprite    :: NormalSprite
+  { birdSprite    :: BirdSprite
   , offScreenBird :: OffScreenBird
   }
 
 
 data OnScreenEntity
-  = OnScreenBalloonEntity OnScreenBalloon
-  | OnScreenBirEntityd OnScreenBird
+  = BalloonOn OnScreenBalloon
+  | BirdOn    OnScreenBird
 
 data OffScreenEntity
-  = OffScreenBalloonEntity OffScreenBalloon
-  | OffScreenBirdEntity OffScreenBird
+  = BaloonOff OffScreenBalloon
+  | BirdOff   OffScreenBird
   deriving (Show, Eq)

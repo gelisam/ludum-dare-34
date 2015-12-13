@@ -113,9 +113,14 @@ main = do
         , playerSprite     = player
         , gameHeight       = 0
         , bestGameHeight   = 0
-        , futureEntities   = []
-        , onScreenEntities = []
-        , missedEntities   = []
+        
+        , entitiesBelow   = []
+        , currentEntities = []
+        , entitiesAbove   = []
+        
+        , backgroundsBelow   = []
+        , currentBackgrounds = []
+        , backgroundsAbove   = []
         }
       
       player_xv_ref <- newIORef 2.5

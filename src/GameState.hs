@@ -2,6 +2,7 @@ module GameState where
 
 import Control.Arrow
 
+import Backgrounds
 import Entities
 import Looping
 import Centered
@@ -20,19 +21,24 @@ data GameState = GameState
   , playerSprite     :: Looping (Scaled (Centered NormalSprite))
   , gameHeight       :: Double
   , bestGameHeight   :: Double
-  , futureEntities   :: [OffScreenEntity]
-  , onScreenEntities :: [OnScreenEntity]
-  , missedEntities   :: [OffScreenEntity]
+  
+  , entitiesBelow   :: [OffScreenEntity]
+  , currentEntities :: [OnScreenEntity]
+  , entitiesAbove   :: [OffScreenEntity]
+  
+  , backgroundsBelow   :: [OffScreenBackground]
+  , currentBackgrounds :: [OnScreenBackground]
+  , backgroundsAbove   :: [OffScreenBackground]
   }
 
--- move entities between the on-screen and off-screen buffers.
+-- move game objects between the on-screen and off-screen buffers.
 -- 
 -- For Ordering, GT means entirely above the screen, EQ means at least partially on screen,
 -- and LT means entirely below the screen.
 -- 
--- Entities in the first buffer (entities below the screen) should be order from top to bottom,
--- entities in the second buffer (entities on the screen) should be ordered from bottom to top,
--- entities in the last buffer (entities above the screen) should be ordered from bottom to top.
+-- Game objects in the first buffer (below the screen) should be order from top to bottom,
+-- game objects in the second buffer (on the screen) should be ordered from bottom to top,
+-- game objects in the last buffer (above the screen) should be ordered from bottom to top.
 shuffleZipper :: Monad m
               => (h -> offScreen -> Ordering)
               -> (h -> onScreen  -> Ordering)
