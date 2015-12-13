@@ -18,6 +18,7 @@ executable ludum-dare34
   other-modules:       Animated
                      , Animation
                      , Backgrounds
+                     , Collidable
                      , Constants
                      , Control.Monad.Extra
                      , Centered
