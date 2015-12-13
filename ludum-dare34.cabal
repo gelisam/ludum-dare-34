@@ -28,6 +28,7 @@ executable ludum-dare34
                      , Scaled
                      , SpriteJS
                      , WindowJS
+                     , Wrapped
   other-extensions:    OverloadedStrings
   build-depends:       base >=4.8 && <4.9
                      , haste-prim

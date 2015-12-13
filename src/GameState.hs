@@ -15,6 +15,7 @@ import JSRef
 import Looping
 import Scaled
 import SpriteJS
+import Wrapped
 
 
 data PlayerStatus
@@ -28,6 +29,8 @@ data PlayerDirection
   | East
   deriving (Show, Eq)
 
+type PlayerSprite = Wrapped (Looping (Scaled (Centered NormalSprite)))
+
 data GameState = GameState
   { gameScene      :: Ptr Scene
   , gameBackLayer1 :: Ptr Layer
@@ -36,7 +39,7 @@ data GameState = GameState
   
   , playerStatus   :: PlayerStatus
   , playerDirection:: PlayerDirection
-  , playerSprite   :: Looping (Scaled (Centered NormalSprite))
+  , playerSprite   :: PlayerSprite
   , gameHeight     :: Double
   , bestGameHeight :: Double
   
@@ -73,9 +76,10 @@ birdAnimation offScreenBird = fmap go xAndIsGoingLeft
         isFlipped = not isGoingLeft
 
 
-newPlayerSprite :: CanHoldSprite a => a -> IO (Looping (Scaled (Centered NormalSprite)))
+newPlayerSprite :: CanHoldSprite a => a -> IO PlayerSprite
 newPlayerSprite parent = do
-    sprite <- newLooping parent playerImageWidth 1 5
+    sprite <- newWrapped game_width
+            $ newLooping parent playerImageWidth 1 5
             $ newScaled 1.0
             $ newCentered playerImageWidth playerImageHeight
             $ newSprite parent "img/up.png"
