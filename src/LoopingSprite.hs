@@ -9,8 +9,8 @@ import SpriteJS
 
 
 data LoopingSprite = LoopingSprite 
-  { aSprite :: ScaledSprite
-  , aCycle :: Ptr Cycle
+  { lSprite :: ScaledSprite
+  , lCycle :: Ptr Cycle
   }
 
 newLoopingSprite :: CanHoldSprite a
@@ -32,17 +32,17 @@ newLoopingSprite parent image w h n ticks scale = do
     return (LoopingSprite sprite cycle)
 
 instance SpriteLike LoopingSprite where
-    rawSprite       = aSprite >>> rawSprite
-    spriteImage     = aSprite >>> spriteImage
-    spriteSize      = aSprite >>> spriteSize
-    spriteScale     = aSprite >>> spriteScale
-    spriteAngle     = aSprite >>> spriteAngle
-    spriteOpacity   = aSprite >>> spriteOpacity
+    rawSprite       = lSprite >>> rawSprite
+    spriteImage     = lSprite >>> spriteImage
+    spriteSize      = lSprite >>> spriteSize
+    spriteScale     = lSprite >>> spriteScale
+    spriteAngle     = lSprite >>> spriteAngle
+    spriteOpacity   = lSprite >>> spriteOpacity
     
-    spritePosition  = aSprite >>> spritePosition
-    spriteVelocity  = aSprite >>> spriteVelocity
-    applyVelocity   = aSprite >>> applyVelocity
-    unapplyVelocity = aSprite >>> unapplyVelocity
+    spritePosition  = lSprite >>> spritePosition
+    spriteVelocity  = lSprite >>> spriteVelocity
+    applyVelocity   = lSprite >>> applyVelocity
+    unapplyVelocity = lSprite >>> unapplyVelocity
     
     updateSprite (LoopingSprite sprite cycle) ticker = do
         updateSprite sprite ticker
