@@ -9,13 +9,14 @@ import Haste.Prim
 
 import Wrapped
 import Animated
+import Collidable
 import Centered
 import Looping
 import Scaled
 import SpriteJS
 
 
-type BalloonSprite = Wrapped (Scaled (Centered NormalSprite))
+type BalloonSprite = Wrapped (Collidable (Scaled (Centered NormalSprite)))
 
 data OffScreenBalloon = OffScreenBalloon
   { balloonInitialX :: Double

@@ -105,6 +105,7 @@ newBirdSprite parent offScreenBird = newDirectionalMoving (birdAnimation offScre
 newBalloonSprite :: CanHoldSprite a => a -> IO BalloonSprite
 newBalloonSprite parent = do
     balloon <- newWrapped game_width
+             $ newCollidable parent (-30) (-70) 50 50
              $ newScaled balloonScale
              $ newCentered balloonImageWidth balloonImageHeight
              $ newSprite parent "img/balloons.png"
