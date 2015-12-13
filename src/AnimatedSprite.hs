@@ -1,7 +1,9 @@
 module AnimatedSprite where
 
+import Control.Arrow
 import Haste.Prim
 
+import JSRef
 import ScaledSprite
 import SpriteJS
 
@@ -22,16 +24,26 @@ newAnimatedSprite :: CanHoldSprite a
                   -> IO AnimatedSprite
 newAnimatedSprite parent image w h n ticks scale = do
     sprite <- newScaledSprite parent image w h scale
-    setSpriteSize (sSprite sprite) w h
-    setSpriteScale (sSprite sprite) scale
     
     scene <- getScene parent
-    cycle <- newCycle scene [(i*w, 0, ticks) | i <- [0..n-1]]
+    cycle <- newCycle scene [(i * w, 0, ticks) | i <- [0..n-1]]
     appendToCycle cycle (sSprite sprite)
     
     return (AnimatedSprite sprite cycle)
 
-updateAnimatedSprite :: AnimatedSprite -> Ptr Ticker -> IO ()
-updateAnimatedSprite (AnimatedSprite sprite cycle) ticker = do
-    updateSprite (sSprite sprite)
-    updateCycle cycle ticker
+instance SpriteLike AnimatedSprite where
+    rawSprite       = aSprite >>> rawSprite
+    spriteImage     = aSprite >>> spriteImage
+    spriteSize      = aSprite >>> spriteSize
+    spriteScale     = aSprite >>> spriteScale
+    spriteAngle     = aSprite >>> spriteAngle
+    spriteOpacity   = aSprite >>> spriteOpacity
+    
+    spritePosition  = aSprite >>> spritePosition
+    spriteVelocity  = aSprite >>> spriteVelocity
+    applyVelocity   = aSprite >>> applyVelocity
+    unapplyVelocity = aSprite >>> unapplyVelocity
+    
+    updateSprite (AnimatedSprite sprite cycle) ticker = do
+        updateSprite sprite ticker
+        updateCycle cycle ticker

@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleInstances, OverloadedStrings #-}
 module SpriteJS where
 
+import Control.Arrow
 import Control.Monad
 import Haste.DOM
 import Haste.Foreign
@@ -60,95 +61,187 @@ instance CanHoldSprite (Ptr Layer) where
     newEmptySprite = ffi "(function(layer) {return layer.Sprite(false);})"
     getScene = getLayerScene
 
-newSprite :: CanHoldSprite a => a -> JSString -> IO (Ptr Sprite)
+newSprite :: CanHoldSprite a
+          => a
+          -> JSString -- ^ image file
+          -> IO (Ptr Sprite)
 newSprite parent image = do
     sprite <- newEmptySprite parent
-    setSpriteImage sprite image
+    writeJSRef (spriteImage sprite) image
     return sprite
 
-getSpriteX :: Ptr Sprite -> IO Int
-getSpriteX = ffi "(function(sprite) {return sprite.x;})"
 
-getSpriteY :: Ptr Sprite -> IO Int
-getSpriteY = ffi "(function(sprite) {return sprite.y;})"
+-- minimum implementation: rawSprite
+class SpriteLike a where
+    rawSprite :: a -> Ptr Sprite
+    
+    spriteImage    :: a -> JSRef JSString
+    spriteImage    = rawSprite >>> rawSpriteImage
+    spriteSize     :: a -> JSRef (Double, Double) -- the image is cropped to this size
+    spriteSize     = rawSprite >>> rawSpriteSize
+    spriteScale    :: a -> JSRef (Double, Double) -- then scaled
+    spriteScale    = rawSprite >>> rawSpriteScale
+    spriteAngle    :: a -> JSRef Double -- in turns, not degrees nor radians
+    spriteAngle    = rawSprite >>> rawSpriteAngle
+    spriteOpacity  :: a -> JSRef Double -- 1.0 for opaque, 0.0 for invisible
+    spriteOpacity  = rawSprite >>> rawSpriteOpacity
+    
+    spritePosition :: a -> JSRef (Double, Double)
+    spritePosition = rawSprite >>> rawSpritePosition
+    spriteVelocity :: a -> JSRef (Double, Double)
+    spriteVelocity = rawSprite >>> rawSpriteVelocity
+    applyVelocity   :: a -> IO ()
+    applyVelocity   = rawSprite >>> rawApplyVelocity
+    unapplyVelocity :: a -> IO ()
+    unapplyVelocity = rawSprite >>> rawUnapplyVelocity
+    
+    updateSprite :: a -> Ptr Ticker -> IO ()
+    updateSprite sprite _ = rawUpdateSprite (rawSprite sprite)
 
-getSpriteWidth :: Ptr Sprite -> IO Int
-getSpriteWidth = ffi "(function(sprite) {return sprite.w;})"
+instance SpriteLike (Ptr Sprite) where
+    rawSprite = id
 
-getSpriteHeight :: Ptr Sprite -> IO Int
-getSpriteHeight = ffi "(function(sprite) {return sprite.h;})"
+rawSpriteImage    :: Ptr Sprite -> JSRef JSString
+rawSpriteImage sprite = JSRef
+  { readJSRef  = ffi "(function(sprite) {return sprite.src;})" sprite
+  , writeJSRef = ffi "(function(sprite,image) {sprite.loadImg(image);})" sprite
+  }
 
-setSpriteImage :: Ptr Sprite -> JSString -> IO ()
-setSpriteImage = ffi "(function(sprite,image) {sprite.loadImg(image);})"
+rawSpriteSize     :: Ptr Sprite -> JSRef (Double, Double) -- the image is cropped to this size
+rawSpriteSize sprite = JSRef
+  { readJSRef  = ffi "(function(sprite) {return [sprite.w, sprite.h];})" sprite
+  , writeJSRef = ffi "(function(sprite,s) {sprite.size(s[0], s[1]);})" sprite
+  }
 
-setSpritePosition :: Ptr Sprite -> Int -> Int -> IO ()
-setSpritePosition = ffi "(function(sprite,x,y) {sprite.position(x,y);})"
+rawSpriteScale    :: Ptr Sprite -> JSRef (Double, Double) -- then scaled
+rawSpriteScale sprite = JSRef
+  { readJSRef  = ffi "(function(sprite) {return [sprite.xscale, sprite.yscale];})" sprite
+  , writeJSRef = ffi "(function(sprite,s) {sprite.scale(s[0], s[1]);})" sprite
+  }
 
-moveSpriteBy :: Ptr Sprite -> Int -> Int -> IO ()
-moveSpriteBy = ffi "(function(sprite,dx,dy) {sprite.move(dx,dy);})"
+rawSpriteAngle    :: Ptr Sprite -> JSRef Double -- in turns, not degrees nor radians
+rawSpriteAngle sprite = JSRef
+  { readJSRef  = ffi "(function(sprite) {return sprite.angle / (2*Math.PI);})" sprite
+  , writeJSRef = ffi "(function(sprite,angle) {sprite.setAngle(angle * (2*Math.PI));})" sprite
+  }
 
--- in turns, not degrees nor radians
-rotateSpriteBy :: Ptr Sprite -> Double -> IO ()
-rotateSpriteBy = ffi "(function(sprite,turns) {sprite.rotate(2*Math.PI*turns);})"
+rawSpriteOpacity  :: Ptr Sprite -> JSRef Double -- 1.0 for opaque, 0.0 for invisible
+rawSpriteOpacity sprite = JSRef
+  { readJSRef  = ffi "(function(sprite) {return sprite.opacity;})" sprite
+  , writeJSRef = ffi "(function(sprite,opacity) {sprite.setOpacity(opacity);})" sprite
+  }
 
-setSpriteSize :: Ptr Sprite -> Int -> Int -> IO ()
-setSpriteSize = ffi "(function(sprite,w,h) {sprite.size(w,h);})"
+rawSpritePosition :: Ptr Sprite -> JSRef (Double, Double)
+rawSpritePosition sprite = JSRef
+  { readJSRef  = ffi "(function(sprite) {return [sprite.x, sprite.y];})" sprite
+  , writeJSRef = ffi "(function(sprite,p) {sprite.position(p[0], p[1]);})" sprite
+  }
 
-setSpriteXYScale :: Ptr Sprite -> Double -> Double -> IO ()
-setSpriteXYScale = ffi "(function(sprite,xfactor,yfactor) {sprite.scale(xfactor,yfactor);})"
+rawSpriteVelocity :: Ptr Sprite -> JSRef (Double, Double)
+rawSpriteVelocity sprite = JSRef
+  { readJSRef  = ffi "(function(sprite) {return [sprite.xv, sprite.yv];})" sprite
+  , writeJSRef = ffi "(function(sprite,v) {sprite.xv = v[0]; sprite.yv = v[1];})" sprite
+  }
+
+rawApplyVelocity   :: Ptr Sprite -> IO ()
+rawApplyVelocity   = ffi "(function(sprite) {sprite.applyVelocity();})"
+
+rawUnapplyVelocity :: Ptr Sprite -> IO ()
+rawUnapplyVelocity = ffi "(function(sprite) {sprite.reverseVelocity();})"
+
+rawUpdateSprite :: Ptr Sprite -> IO ()
+rawUpdateSprite = ffi "(function(sprite) {sprite.update();})"
+
+spriteWidth :: SpriteLike a => a -> JSRef Double
+spriteWidth sprite = JSRef
+  { readJSRef  = fst <$> readJSRef (spriteSize sprite)
+  , writeJSRef = \w -> do
+      (_,h) <- readJSRef (spriteSize sprite)
+      writeJSRef (spriteSize sprite) (w,h)
+  }
+
+spriteHeight :: SpriteLike a => a -> JSRef Double
+spriteHeight sprite = JSRef
+  { readJSRef  = snd <$> readJSRef (spriteSize sprite)
+  , writeJSRef = \h -> do
+      (w,_) <- readJSRef (spriteSize sprite)
+      writeJSRef (spriteSize sprite) (w,h)
+  }
+
+spriteXScale :: SpriteLike a => a -> JSRef Double
+spriteXScale sprite = JSRef
+  { readJSRef  = fst <$> readJSRef (spriteScale sprite)
+  , writeJSRef = \sx -> do
+      (_,sy) <- readJSRef (spriteScale sprite)
+      writeJSRef (spriteScale sprite) (sx,sy)
+  }
+
+spriteYScale :: SpriteLike a => a -> JSRef Double
+spriteYScale sprite = JSRef
+  { readJSRef  = snd <$> readJSRef (spriteScale sprite)
+  , writeJSRef = \sy -> do
+      (sx,_) <- readJSRef (spriteScale sprite)
+      writeJSRef (spriteScale sprite) (sx,sy)
+  }
 
 -- uniform scale
-setSpriteScale :: Ptr Sprite -> Double -> IO ()
-setSpriteScale sprite factor = setSpriteXYScale sprite factor factor
+setSpriteScale :: SpriteLike a => a -> Double -> IO ()
+setSpriteScale sprite factor = writeJSRef (spriteScale sprite) (factor, factor)
 
--- 1.0 for opaque, 0.0 for invisible
-setSpriteOpacity :: Ptr Sprite -> Double -> IO ()
-setSpriteOpacity = ffi "(function(sprite,opacity) {sprite.setOpacity(opacity);})"
-
-xVelocity :: Ptr Sprite -> JSRef Double
-xVelocity sprite = JSRef
-  { readJSRef  = ffi "(function(sprite) {return sprite.xv;})" sprite
-  , writeJSRef = ffi "(function(sprite,xv) {sprite.xv = xv;})" sprite
+spriteXPosition :: SpriteLike a => a -> JSRef Double
+spriteXPosition sprite = JSRef
+  { readJSRef  = fst <$> readJSRef (spritePosition sprite)
+  , writeJSRef = \x -> do
+      (_,y) <- readJSRef (spritePosition sprite)
+      writeJSRef (spritePosition sprite) (x,y)
   }
 
-yVelocity :: Ptr Sprite -> JSRef Double
-yVelocity sprite = JSRef
-  { readJSRef  = ffi "(function(sprite) {return sprite.yv;})" sprite
-  , writeJSRef = ffi "(function(sprite,yv) {sprite.yv = yv;})" sprite
+spriteYPosition :: SpriteLike a => a -> JSRef Double
+spriteYPosition sprite = JSRef
+  { readJSRef  = snd <$> readJSRef (spritePosition sprite)
+  , writeJSRef = \y -> do
+      (x,_) <- readJSRef (spritePosition sprite)
+      writeJSRef (spritePosition sprite) (x,y)
   }
 
-applyXVelocity :: Ptr Sprite -> IO ()
-applyXVelocity = ffi "(function(sprite) {return sprite.applyXVelocity();})"
+spriteXVelocity :: SpriteLike a => a -> JSRef Double
+spriteXVelocity sprite = JSRef
+  { readJSRef  = fst <$> readJSRef (spriteVelocity sprite)
+  , writeJSRef = \xv -> do
+      (_,yv) <- readJSRef (spriteVelocity sprite)
+      writeJSRef (spriteVelocity sprite) (xv,yv)
+  }
 
-applyYVelocity :: Ptr Sprite -> IO ()
-applyYVelocity = ffi "(function(sprite) {return sprite.applyYVelocity();})"
+spriteYVelocity :: SpriteLike a => a -> JSRef Double
+spriteYVelocity sprite = JSRef
+  { readJSRef  = snd <$> readJSRef (spriteVelocity sprite)
+  , writeJSRef = \yv -> do
+      (xv,_) <- readJSRef (spriteVelocity sprite)
+      writeJSRef (spriteVelocity sprite) (xv,yv)
+  }
 
-applyVelocity :: Ptr Sprite -> IO ()
-applyVelocity = ffi "(function(sprite) {return sprite.applyVelocity();})"
 
-unapplyXVelocity :: Ptr Sprite -> IO ()
-unapplyXVelocity = ffi "(function(sprite) {return sprite.reverseXVelocity();})"
+rawCollidesWith :: Ptr Sprite -> Ptr Sprite -> IO Bool
+rawCollidesWith = ffi "(function(sprite,sprite2) {return sprite.collidesWith(sprite2);})"
 
-unapplyYVelocity :: Ptr Sprite -> IO ()
-unapplyYVelocity = ffi "(function(sprite) {return sprite.reverseYVelocity();})"
+rawCollidesWithArray :: Ptr Sprite -> [Ptr Sprite] -> IO (Maybe (Ptr Sprite))
+rawCollidesWithArray = ffi "(function(sprite,sprites) {return sprite.collidesWithArray(sprites) || null;})"
 
-unapplyVelocity :: Ptr Sprite -> IO ()
-unapplyVelocity = ffi "(function(sprite) {return sprite.reverseVelocity();})"
+rawCollidesWithSpriteList :: Ptr Sprite -> Ptr SpriteList -> IO (Maybe (Ptr Sprite))
+rawCollidesWithSpriteList = ffi "(function(sprite,sprites) {return sprite.collidesWithArray(sprites) || null;})"
 
-updateSprite :: Ptr Sprite -> IO ()
-updateSprite = ffi "(function(sprite) {sprite.update();})"
+rawIsPointIn :: Ptr Sprite -> Int -> Int -> IO Bool
+rawIsPointIn = ffi "(function(sprite,x,y) {return sprite.isPointIn(x,y);})"
 
-collidesWith :: Ptr Sprite -> Ptr Sprite -> IO Bool
-collidesWith = ffi "(function(sprite,sprite2) {return sprite.collidesWith(sprite2);})"
+collidesWith :: (SpriteLike a, SpriteLike b) => a -> b -> IO Bool
+collidesWith sprite1 sprite2 = rawCollidesWith (rawSprite sprite1) (rawSprite sprite2)
 
-collidesWithArray :: Ptr Sprite -> [Ptr Sprite] -> IO (Maybe (Ptr Sprite))
-collidesWithArray = ffi "(function(sprite,sprites) {return sprite.collidesWithArray(sprites) || null;})"
+-- TODO: return the original b, not the Sprite it contains
+collidesWithArray :: (SpriteLike a, SpriteLike b) => a -> [b] -> IO (Maybe (Ptr Sprite))
+collidesWithArray sprite sprites = rawCollidesWithArray (rawSprite sprite) (map rawSprite sprites)
 
-collidesWithSpriteList :: Ptr Sprite -> Ptr SpriteList -> IO (Maybe (Ptr Sprite))
-collidesWithSpriteList = ffi "(function(sprite,sprites) {return sprite.collidesWithArray(sprites) || null;})"
-
-isPointIn :: Ptr Sprite -> Int -> Int -> IO Bool
-isPointIn = ffi "(function(sprite,x,y) {return sprite.isPointIn(x,y);})"
+collidesWithSpriteList :: SpriteLike a => a -> Ptr SpriteList -> IO (Maybe (Ptr Sprite))
+collidesWithSpriteList sprite list = rawCollidesWithSpriteList (rawSprite sprite) list
 
 
 -- the documentation doesn't say what the name is for, is it even used?

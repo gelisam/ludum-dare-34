@@ -63,7 +63,10 @@ birdState = birdInitialX
 
 
 newPlayerSprite :: CanHoldSprite a => a -> IO AnimatedSprite
-newPlayerSprite parent = newAnimatedSprite parent "img/character.png" 30 52 7 5 1.0
+newPlayerSprite parent = do
+    sprite <- newAnimatedSprite parent "img/character.png" 30 52 7 5 1.0
+    writeJSRef (spriteXScale sprite) (-1)
+    return sprite
 
 newBirdSprite :: CanHoldSprite a => a -> IO AnimatedSprite
 newBirdSprite parent = newAnimatedSprite parent "img/flying-enemy.png"
@@ -78,7 +81,7 @@ newParallax parent image = do
 newBalloonSprite :: CanHoldSprite a => a -> IO (Ptr Sprite)
 newBalloonSprite parent = do
     balloon <- newEmptySprite parent
-    setSpriteSize balloon 20 20
+    writeJSRef (spriteSize balloon) (20, 20)
     
     dom <- getDom balloon
     set dom [style "border" =: "2px solid #880000"]
@@ -121,15 +124,15 @@ main = do
       bird <- newBirdSprite front
       
       score <- newEmptySprite front
-      setSpriteSize score 200 100
-      setSpritePosition score 20 20
-      updateSprite score
+      writeJSRef (spriteSize score) (200, 100)
+      writeJSRef (spritePosition score) (20, 20)
+      rawUpdateSprite score
       
       dom <- getDom score
       set dom [attr "id" =: "score"]
       
       player <- newPlayerSprite front
-      setScaledSpritePosition (aSprite player) 40 200
+      writeJSRef (spritePosition player) (40, 200)
       
       player_xv_ref <- newIORef 2.5
       score_count_ref <- newIORef 0.0
@@ -139,10 +142,9 @@ main = do
         let t = computeSeconds ticks
         
         let (x, isGoingLeft) = birdState (OffScreenBird 0 0) t
-        let sx = if isGoingLeft then 1 else -1
-        setScaledSpritePosition (aSprite bird) x 100
-        setScaledSpriteXYScale (aSprite bird) sx 1
-        updateAnimatedSprite bird ticker
+        writeJSRef (spritePosition bird) (x, 100)
+        writeJSRef (spriteXScale bird) (if isGoingLeft then 1 else -1)
+        updateSprite bird ticker
         
         -- Update first parallax layer
         setSpritePosition building 0 (round (linear (920 - 2856) 56 t :: Double)) 
@@ -160,16 +162,16 @@ main = do
         player_xv <- readIORef player_xv_ref
         score_count <- readIORef score_count_ref
         
-        modifyJSRef (yVelocity (sSprite (aSprite player))) (+ gravity)
-        applyVelocity (sSprite (aSprite player))
+        modifyJSRef (spriteYVelocity player) (+ gravity)
+        applyVelocity player
         
-        updateAnimatedSprite player ticker
+        updateSprite player ticker
 
         dom <- getDom score
         score_count <- readIORef score_count_ref
         set dom ["innerHTML" =: printf "Score %d" (round score_count :: Int)]
         
-        y <- getSpriteY (sSprite (aSprite player))
+        y <- readJSRef (spriteYPosition player)
         when (y > game_height) $ do
           pauseTicker ticker
           alert "Game over"
