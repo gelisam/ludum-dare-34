@@ -2,7 +2,7 @@ module GameState where
 
 import Entities
 import Looping
-import ScaledSprite
+import Scaled
 import SpriteJS
 
 
@@ -14,7 +14,7 @@ data PlayerStatus
 
 data GameState = GameState
   { playerStatus     :: PlayerStatus
-  , playerSprite     :: Looping ScaledSprite
+  , playerSprite     :: Looping (Scaled NormalSprite)
   , gameHeight       :: Double
   , bestGameHeight   :: Double
   , futureEntities   :: [OffScreenEntity]

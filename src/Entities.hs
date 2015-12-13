@@ -1,7 +1,5 @@
 module Entities where
 
-import Haste.Prim
-
 import SpriteJS
 
 
@@ -17,19 +15,19 @@ data OffScreenBalloon = OffScreenBalloon
   deriving (Show, Eq)
 
 data OnScreenBalloon = OnScreenBalloon
-  { balloonSprite :: Ptr Sprite
+  { balloonSprite    :: NormalSprite
   , offScreenBalloon :: OffScreenBalloon
   }
 
 
 data OffScreenBird = OffScreenBird
   { birdInitialX :: Double
-  , birdHeight :: Double
+  , birdHeight   :: Double
   }
   deriving (Show, Eq)
 
 data OnScreenBird = OnScreenBird
-  { birdSprite :: Ptr Sprite
+  { birdSprite    :: NormalSprite
   , offScreenBird :: OffScreenBird
   }
 

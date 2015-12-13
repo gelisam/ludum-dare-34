@@ -5,7 +5,6 @@ import Data.IORef
 import Haste
 import Haste.DOM
 import Haste.Foreign
-import Haste.Prim
 import Text.Printf
 
 import Animation
@@ -14,7 +13,7 @@ import GameState
 import JSRef
 import Looping
 import Random
-import ScaledSprite
+import Scaled
 import SpriteJS
 import WindowJS
 
@@ -78,25 +77,26 @@ birdState = birdInitialX
         >>> bounce (birdWidth / 2, game_width - birdWidth / 2)
 
 
-newPlayerSprite :: CanHoldSprite a => a -> IO (Looping ScaledSprite)
+newPlayerSprite :: CanHoldSprite a => a -> IO (Looping (Scaled NormalSprite))
 newPlayerSprite parent = do
     sprite <- newLooping parent playerImageWidth 7 5
-            $ newScaledSprite parent "img/character.png" 30 52 1.0
+            $ newScaled 30 52 1.0
+            $ newSprite parent "img/character.png"
     writeJSRef (spriteXScale sprite) (-1)
     return sprite
 
-newBirdSprite :: CanHoldSprite a => a -> IO (Looping ScaledSprite)
+newBirdSprite :: CanHoldSprite a => a -> IO (Looping (Scaled NormalSprite))
 newBirdSprite parent = newLooping parent birdImageWidth 11 5
-                     $ newScaledSprite parent "img/flying-enemy.png"
-                                       birdImageWidth birdImageHeight birdScale
+                     $ newScaled birdImageWidth birdImageHeight birdScale
+                     $ newSprite parent "img/flying-enemy.png"
 
-newParallax :: CanHoldSprite a => a -> JSString -> IO (Ptr Sprite)
+newParallax :: CanHoldSprite a => a -> JSString -> IO NormalSprite
 newParallax parent image = do
    parallax <- newSprite parent image
    return parallax 
 
 -- TODO: use a random balloon image instead
-newBalloonSprite :: CanHoldSprite a => a -> IO (Ptr Sprite)
+newBalloonSprite :: CanHoldSprite a => a -> IO NormalSprite
 newBalloonSprite parent = do
     balloon <- newEmptySprite parent
     writeJSRef (spriteSize balloon) (20, 20)

@@ -23,7 +23,7 @@
 -- 
 -- The position is now neither on the top-left nor in the center of the sprite!
 -- In this module I implement sprites which know their initial image size, so
--- that we can draw the image around the center point set by setScaledSpritePosition:
+-- that we can draw the image around the center point set by setScaledPosition:
 -- 
 --   ...........
 --   ...........
@@ -33,45 +33,43 @@
 --   ...........
 --   ...........
 {-# LANGUAGE TypeFamilies #-}
-module ScaledSprite where
+module Scaled where
 
 import Control.Arrow
-import Haste.Prim
 
 import JSRef
 import SpriteJS
 
 
-data ScaledSprite = ScaledSprite
+data Scaled a = Scaled
   { initialImageWidth  :: Int
   , initialImageHeight :: Int
-  , sSprite :: Ptr Sprite
+  , sSprite :: a
   , sScale :: Double
   }
 
-newScaledSprite :: CanHoldSprite a
-                => a
-                -> JSString  -- ^ image file
-                -> Int  -- ^ original image width
-                -> Int  -- ^ original image height
-                -> Double  -- ^ scale factor
-                -> IO ScaledSprite
-newScaledSprite parent image w h scale = do
-    sprite <- newSprite parent image
+newScaled :: SpriteLike a
+          => Int  -- ^ original image width
+          -> Int  -- ^ original image height
+          -> Double  -- ^ scale factor
+          -> IO a
+          -> IO (Scaled a)
+newScaled w h scale mkSprite = do
+    sprite <- mkSprite
     writeJSRef (spriteSize sprite) (fromIntegral w, fromIntegral h)
     setSpriteScale sprite scale
-    return (ScaledSprite w h sprite scale)
+    return (Scaled w h sprite scale)
 
-instance SpriteLike ScaledSprite where
-    type UpdateParam ScaledSprite = ()
+instance SpriteLike a => SpriteLike (Scaled a) where
+    type UpdateParam (Scaled a) = UpdateParam a
     
     rawSprite = sSprite >>> rawSprite
     
-    spriteSize (ScaledSprite w h _ _) = JSRef
+    spriteSize (Scaled w h _ _) = JSRef
       { readJSRef  = return (fromIntegral w, fromIntegral h)
-      , writeJSRef = \_ -> error "bad idea, the dimentions stored in ScaledSprite would no longer match"
+      , writeJSRef = \_ -> error "bad idea, the dimentions stored in Scaled would no longer match"
       }
-    spriteScale (ScaledSprite _ _ sprite scale) = JSRef
+    spriteScale (Scaled _ _ sprite scale) = JSRef
       { readJSRef  = do
           (sx,sy) <- readJSRef (spriteScale sprite)
           return (sx / scale, sy / scale)
@@ -79,7 +77,7 @@ instance SpriteLike ScaledSprite where
           writeJSRef (spriteScale sprite)
                      (sx * scale, sy * scale)
       }
-    spritePosition (ScaledSprite w h sprite _) = JSRef
+    spritePosition (Scaled w h sprite _) = JSRef
       { readJSRef  = do
           (x,y) <- readJSRef (spritePosition sprite)
           return (x + fromIntegral w / 2, y + fromIntegral h / 2)

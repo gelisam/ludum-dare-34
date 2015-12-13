@@ -21,7 +21,7 @@ executable ludum-dare34
                      , JSRef
                      , Looping
                      , Random
-                     , ScaledSprite
+                     , Scaled
                      , SpriteJS
                      , WindowJS
   other-extensions:    OverloadedStrings

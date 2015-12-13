@@ -100,6 +100,8 @@ class SpriteLike a where
     updateSprite :: a -> UpdateParam a -> IO ()
     updateSprite sprite _ = rawUpdateSprite (rawSprite sprite)
 
+type NormalSprite = Ptr Sprite
+
 instance SpriteLike (Ptr Sprite) where
     type UpdateParam (Ptr Sprite) = ()
     
