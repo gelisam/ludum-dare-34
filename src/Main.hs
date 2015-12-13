@@ -101,24 +101,24 @@ main = do
       front <- newLayer scene "front"
 
 --      city <- newSprite front "img/city-zoomed-out.png"
---      setSpriteSize city 640 797
---      setSpritePosition city 0 123
---      updateSprite city
+--      writeJSRef (spriteSize city) (640,797)
+--      writeJSRef (spritePosition city) (0,123)
+--      rawUpdateSprite city
       mountain <- newSprite back2 "img/mountain-shadows.png"
-      setSpriteSize mountain 640 920
-      setSpritePosition mountain 0 0
-      updateSprite mountain
+      writeJSRef (spriteSize mountain) (640,920)
+      writeJSRef (spritePosition mountain) (0,0)
+      rawUpdateSprite mountain
 
 
       building <- newSprite back "img/city-zoomed-in.png"
-      setSpriteSize building 640 2856
-      setSpritePosition building 0 (920 - 2856)
-      updateSprite building
+      writeJSRef (spriteSize building) (640,2856)
+      writeJSRef (spritePosition building) (0, 920 - 2856)
+      rawUpdateSprite building
 
       building_shadow <- newSprite back2 "img/city-shadow.png"
-      setSpriteSize building_shadow 640 920
-      setSpritePosition building_shadow 0 0
-      updateSprite building_shadow
+      writeJSRef (spriteSize building_shadow) (640,920)
+      writeJSRef (spritePosition building_shadow) (0,0)
+      rawUpdateSprite building_shadow
 
       
       bird <- newBirdSprite front
@@ -147,17 +147,17 @@ main = do
         updateSprite bird ticker
         
         -- Update first parallax layer
-        setSpritePosition building 0 (round (linear (920 - 2856) 56 t :: Double)) 
-        updateSprite building
+        writeJSRef (spriteYPosition building) (linear (920 - 2856) 56 t)
+        updateSprite building ticker
 
         -- debugging to estimate cues
         print t
 
-        setSpritePosition building_shadow 0 (round ((delayed 10 (linear 0 18) t) :: Double))
-        updateSprite building_shadow
+        writeJSRef (spriteYPosition building_shadow) (delayed 10 (linear 0 18) t)
+        updateSprite building_shadow ticker
 
-        setSpritePosition mountain 0 (round ((delayed 10 (linear 0 9) t) :: Double))
-        updateSprite mountain
+        writeJSRef (spriteYPosition mountain) (delayed 10 (linear 0 9) t)
+        updateSprite mountain ticker
         
         player_xv <- readIORef player_xv_ref
         score_count <- readIORef score_count_ref
