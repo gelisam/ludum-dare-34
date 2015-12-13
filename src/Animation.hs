@@ -19,3 +19,6 @@ bounce (lo, hi) anim t | x' < half_period = (lo + x', False)
     period = 2 * half_period
     x = anim t
     x' = (x - lo) `mod'` period
+
+delayed :: Double -> Animation a -> Animation a
+delayed after anim t = if t < after then  anim 0 else anim (t - after) 
