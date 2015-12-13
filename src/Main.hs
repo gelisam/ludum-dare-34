@@ -9,10 +9,10 @@ import Haste.Prim
 import Text.Printf
 
 import Animation
-import AnimatedSprite
 import Entities
 import GameState
 import JSRef
+import LoopingSprite
 import Random
 import ScaledSprite
 import SpriteJS
@@ -62,15 +62,15 @@ birdState = birdInitialX
         >>> bounce (birdWidth / 2, game_width - birdWidth / 2)
 
 
-newPlayerSprite :: CanHoldSprite a => a -> IO AnimatedSprite
+newPlayerSprite :: CanHoldSprite a => a -> IO LoopingSprite
 newPlayerSprite parent = do
-    sprite <- newAnimatedSprite parent "img/character.png" 30 52 7 5 1.0
+    sprite <- newLoopingSprite parent "img/character.png" 30 52 7 5 1.0
     writeJSRef (spriteXScale sprite) (-1)
     return sprite
 
-newBirdSprite :: CanHoldSprite a => a -> IO AnimatedSprite
-newBirdSprite parent = newAnimatedSprite parent "img/flying-enemy.png"
-                                         birdImageWidth birdImageHeight 11 5 birdScale
+newBirdSprite :: CanHoldSprite a => a -> IO LoopingSprite
+newBirdSprite parent = newLoopingSprite parent "img/flying-enemy.png"
+                                        birdImageWidth birdImageHeight 11 5 birdScale
 
 newParallax :: CanHoldSprite a => a -> JSString -> IO (Ptr Sprite)
 newParallax parent image = do
