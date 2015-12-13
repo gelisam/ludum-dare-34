@@ -89,7 +89,6 @@ newBalloonSprite parent = do
     set dom [style "background-color" =: "red"]
     
     return balloon
-
     
     
 main :: IO ()
@@ -133,6 +132,16 @@ main = do
       
       player <- newPlayerSprite front
       writeJSRef (spritePosition player) (40, 200)
+      
+      game_state_ref <- newIORef $ GameState
+        { playerStatus     = Floating 1
+        , playerSprite     = player
+        , playerHeight     = 0
+        , bestPlayerHeight = 0
+        , futureEntities   = []
+        , onScreenEntities = []
+        , missedEntities   = []
+        }
       
       player_xv_ref <- newIORef 2.5
       score_count_ref <- newIORef 0.0
