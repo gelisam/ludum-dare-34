@@ -76,7 +76,8 @@ class SpriteLike a where
     rawSprite :: a -> Ptr Sprite
     
     spriteImage    :: a -> JSRef JSString
-    spriteSize     :: a -> JSRef (Double, Double) -- the image is cropped to this size
+    spriteOffset   :: a -> JSRef (Double, Double) -- the image is cropped to this position
+    spriteSize     :: a -> JSRef (Double, Double) -- and size
     spriteScale    :: a -> JSRef (Double, Double) -- then scaled
     spriteAngle    :: a -> JSRef Double -- in turns, not degrees nor radians
     spriteOpacity  :: a -> JSRef Double -- 1.0 for opaque, 0.0 for invisible
@@ -98,6 +99,10 @@ instance SpriteLike (Ptr Sprite) where
     spriteImage sprite = JSRef
       { readJSRef  = ffi "(function(sprite) {return sprite.src;})" sprite
       , writeJSRef = ffi "(function(sprite,image) {sprite.loadImg(image);})" sprite
+      }
+    spriteOffset sprite = JSRef
+      { readJSRef  = ffi "(function(sprite) {return [sprite.xoffset, sprite.yoffset];})" sprite
+      , writeJSRef = ffi "(function(sprite,o) {sprite.offset(o[0], o[1]);})" sprite
       }
     spriteSize sprite = JSRef
       { readJSRef  = ffi "(function(sprite) {return [sprite.w, sprite.h];})" sprite
@@ -128,6 +133,22 @@ instance SpriteLike (Ptr Sprite) where
     unapplyVelocity = ffi "(function(sprite) {sprite.reverseVelocity();})"
     
     updateSprite sprite () = ffi "(function(sprite) {sprite.update();})" sprite
+
+spriteXOffset :: SpriteLike a => a -> JSRef Double
+spriteXOffset sprite = JSRef
+  { readJSRef  = fst <$> readJSRef (spriteOffset sprite)
+  , writeJSRef = \x -> do
+      (_,y) <- readJSRef (spriteOffset sprite)
+      writeJSRef (spriteOffset sprite) (x,y)
+  }
+
+spriteYOffset :: SpriteLike a => a -> JSRef Double
+spriteYOffset sprite = JSRef
+  { readJSRef  = snd <$> readJSRef (spriteOffset sprite)
+  , writeJSRef = \y -> do
+      (x,_) <- readJSRef (spriteOffset sprite)
+      writeJSRef (spriteOffset sprite) (x,y)
+  }
 
 spriteWidth :: SpriteLike a => a -> JSRef Double
 spriteWidth sprite = JSRef

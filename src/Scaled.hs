@@ -28,6 +28,7 @@ instance SpriteLike a => SpriteLike (Scaled a) where
     
     rawSprite       = sSprite >>> rawSprite
     spriteImage     = sSprite >>> spriteImage
+    spriteOffset    = sSprite >>> spriteOffset
     spriteSize      = sSprite >>> spriteSize
     spriteAngle     = sSprite >>> spriteAngle
     spriteOpacity   = sSprite >>> spriteOpacity

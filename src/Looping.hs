@@ -36,6 +36,7 @@ instance SpriteLike a => SpriteLike (Looping a) where
     
     rawSprite       = lSprite >>> rawSprite
     spriteImage     = lSprite >>> spriteImage
+    spriteOffset    = lSprite >>> spriteOffset
     spriteSize      = lSprite >>> spriteSize
     spriteScale     = lSprite >>> spriteScale
     spriteAngle     = lSprite >>> spriteAngle

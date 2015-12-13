@@ -2,6 +2,7 @@
 module GameState where
 
 import Control.Arrow
+import Control.Monad
 import Haste.DOM
 import Haste.Prim
 
@@ -83,7 +84,6 @@ newPlayerSprite parent = do
             $ newScaled 1.0
             $ newCentered playerImageWidth playerImageHeight
             $ newSprite parent "img/up.png"
-    writeJSRef (spriteXScale sprite) (-1)
     return sprite
 
 newBirdSprite :: CanHoldSprite a
@@ -245,6 +245,12 @@ nextGameState (g@GameState {..}) = do
     let playerDirection' = if going_left then West else if going_right then East else Straight
     
     nextPlayerVelocity playerDirection' playerSprite
+
+    when (playerStatus /= Falling) $ do
+      writeJSRef (spriteXOffset playerSprite) $ case playerDirection' of
+        Straight -> 0
+        West     -> playerImageWidth
+        East     -> playerImageWidth * 2
 
     return $ g
       { playerDirection = playerDirection'

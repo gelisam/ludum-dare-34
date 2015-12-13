@@ -76,6 +76,7 @@ instance SpriteLike a => SpriteLike (Centered a) where
     
     rawSprite       = cSprite >>> rawSprite
     spriteImage     = cSprite >>> spriteImage
+    spriteOffset    = cSprite >>> spriteOffset
     spriteScale     = cSprite >>> spriteScale
     spriteAngle     = cSprite >>> spriteAngle
     spriteOpacity   = cSprite >>> spriteOpacity

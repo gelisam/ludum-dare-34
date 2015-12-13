@@ -71,6 +71,7 @@ instance SpriteLike a => SpriteLike (Wrapped a) where
     rawSprite = wSprite1 >>> rawSprite
     
     spriteImage    (Wrapped s1 s2 _) = syncedJSRefs (spriteImage    s1) (spriteImage    s2)
+    spriteOffset   (Wrapped s1 s2 _) = syncedJSRefs (spriteOffset   s1) (spriteOffset   s2)
     spriteSize     (Wrapped s1 s2 _) = syncedJSRefs (spriteSize     s1) (spriteSize     s2)
     spriteScale    (Wrapped s1 s2 _) = syncedJSRefs (spriteScale    s1) (spriteScale    s2)
     spriteAngle    (Wrapped s1 s2 _) = syncedJSRefs (spriteAngle    s1) (spriteAngle    s2)

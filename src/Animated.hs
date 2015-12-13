@@ -89,6 +89,7 @@ instance SpriteLike a => SpriteLike (Animated a) where
     
     rawSprite       = aSprite >>> rawSprite
     spriteImage     = aSprite >>> spriteImage
+    spriteOffset    = aSprite >>> spriteOffset
     spriteSize      = aSprite >>> spriteSize
     spriteScale     = aSprite >>> spriteScale
     spriteAngle     = aSprite >>> spriteAngle
