@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, OverloadedStrings #-}
+{-# LANGUAGE FlexibleInstances, OverloadedStrings, TypeFamilies #-}
 module SpriteJS where
 
 import Control.Arrow
@@ -73,6 +73,8 @@ newSprite parent image = do
 
 -- minimum implementation: rawSprite
 class SpriteLike a where
+    type UpdateParam a
+    
     rawSprite :: a -> Ptr Sprite
     
     spriteImage    :: a -> JSRef JSString
@@ -95,10 +97,12 @@ class SpriteLike a where
     unapplyVelocity :: a -> IO ()
     unapplyVelocity = rawSprite >>> rawUnapplyVelocity
     
-    updateSprite :: a -> Ptr Ticker -> IO ()
+    updateSprite :: a -> UpdateParam a -> IO ()
     updateSprite sprite _ = rawUpdateSprite (rawSprite sprite)
 
 instance SpriteLike (Ptr Sprite) where
+    type UpdateParam (Ptr Sprite) = ()
+    
     rawSprite = id
 
 rawSpriteImage    :: Ptr Sprite -> JSRef JSString

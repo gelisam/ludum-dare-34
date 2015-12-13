@@ -15,11 +15,11 @@ cabal-version:       >=1.10
 
 executable ludum-dare34
   main-is:             Main.hs
-  other-modules:       LoopingSprite
-                     , Animation
+  other-modules:       Animation
                      , Entities
                      , GameState
                      , JSRef
+                     , Looping
                      , Random
                      , ScaledSprite
                      , SpriteJS

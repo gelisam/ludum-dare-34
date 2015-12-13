@@ -12,7 +12,7 @@ import Animation
 import Entities
 import GameState
 import JSRef
-import LoopingSprite
+import Looping
 import Random
 import ScaledSprite
 import SpriteJS
@@ -31,11 +31,27 @@ gravity = 0 -- 0.5
 fps :: Num a => a
 fps = 25
 
-birdPixelsPerSecond :: Num a => a
-birdPixelsPerSecond = 100
-
 playerPixelsPerSecond :: Num a => a
 playerPixelsPerSecond = 100
+
+playerScale :: Double
+playerScale = 1
+
+playerImageWidth :: Num a => a
+playerImageWidth = 30
+
+playerImageHeight :: Num a => a
+playerImageHeight = 52
+
+playerWidth :: Double
+playerWidth = playerScale * playerImageWidth
+
+playerHeight :: Double
+playerHeight = playerScale * playerImageHeight
+
+
+birdPixelsPerSecond :: Num a => a
+birdPixelsPerSecond = 100
 
 birdScale :: Double
 birdScale = 0.8
@@ -47,10 +63,10 @@ birdImageHeight :: Num a => a
 birdImageHeight = 128
 
 birdWidth :: Double
-birdWidth = birdScale * 128
+birdWidth = birdScale * birdImageWidth
 
 birdHeight :: Double
-birdHeight = birdScale * 128
+birdHeight = birdScale * birdImageHeight
 
 
 computeSeconds :: Int -> Double
@@ -62,15 +78,17 @@ birdState = birdInitialX
         >>> bounce (birdWidth / 2, game_width - birdWidth / 2)
 
 
-newPlayerSprite :: CanHoldSprite a => a -> IO LoopingSprite
+newPlayerSprite :: CanHoldSprite a => a -> IO (Looping ScaledSprite)
 newPlayerSprite parent = do
-    sprite <- newLoopingSprite parent "img/character.png" 30 52 7 5 1.0
+    sprite <- newLooping parent playerImageWidth 7 5
+            $ newScaledSprite parent "img/character.png" 30 52 1.0
     writeJSRef (spriteXScale sprite) (-1)
     return sprite
 
-newBirdSprite :: CanHoldSprite a => a -> IO LoopingSprite
-newBirdSprite parent = newLoopingSprite parent "img/flying-enemy.png"
-                                        birdImageWidth birdImageHeight 11 5 birdScale
+newBirdSprite :: CanHoldSprite a => a -> IO (Looping ScaledSprite)
+newBirdSprite parent = newLooping parent birdImageWidth 11 5
+                     $ newScaledSprite parent "img/flying-enemy.png"
+                                       birdImageWidth birdImageHeight birdScale
 
 newParallax :: CanHoldSprite a => a -> JSString -> IO (Ptr Sprite)
 newParallax parent image = do
@@ -136,8 +154,8 @@ main = do
       game_state_ref <- newIORef $ GameState
         { playerStatus     = Floating 1
         , playerSprite     = player
-        , playerHeight     = 0
-        , bestPlayerHeight = 0
+        , gameHeight       = 0
+        , bestGameHeight   = 0
         , futureEntities   = []
         , onScreenEntities = []
         , missedEntities   = []
@@ -153,20 +171,20 @@ main = do
         let (x, isGoingLeft) = birdState (OffScreenBird 0 0) t
         writeJSRef (spritePosition bird) (x, 100)
         writeJSRef (spriteXScale bird) (if isGoingLeft then 1 else -1)
-        updateSprite bird ticker
+        updateSprite bird (ticker, ())
         
         -- Update first parallax layer
         writeJSRef (spriteYPosition building) (linear (920 - 2856) 56 t)
-        updateSprite building ticker
+        updateSprite building ()
 
         -- debugging to estimate cues
         print t
 
         writeJSRef (spriteYPosition building_shadow) (delayed 10 (linear 0 18) t)
-        updateSprite building_shadow ticker
+        updateSprite building_shadow ()
 
         writeJSRef (spriteYPosition mountain) (delayed 10 (linear 0 9) t)
-        updateSprite mountain ticker
+        updateSprite mountain ()
         
         player_xv <- readIORef player_xv_ref
         score_count <- readIORef score_count_ref
@@ -174,7 +192,7 @@ main = do
         modifyJSRef (spriteYVelocity player) (+ gravity)
         applyVelocity player
         
-        updateSprite player ticker
+        updateSprite player (ticker, ())
 
         dom <- getDom score
         score_count <- readIORef score_count_ref

@@ -32,6 +32,7 @@
 --   ....***....
 --   ...........
 --   ...........
+{-# LANGUAGE TypeFamilies #-}
 module ScaledSprite where
 
 import Control.Arrow
@@ -62,6 +63,8 @@ newScaledSprite parent image w h scale = do
     return (ScaledSprite w h sprite scale)
 
 instance SpriteLike ScaledSprite where
+    type UpdateParam ScaledSprite = ()
+    
     rawSprite = sSprite >>> rawSprite
     
     spriteSize (ScaledSprite w h _ _) = JSRef
