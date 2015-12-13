@@ -57,7 +57,7 @@ data OffScreenBackground
 
 
 drawOnScreenBackground :: Double -> Double -> Double -> Ptr Ticker -> OnScreenBackground -> IO ()
-drawOnScreenBackground t h a ticker = go
+drawOnScreenBackground t h a _ = go
   where
     go (ParallaxOn parallaxLayer) = drawParallaxLayer parallaxLayer (t, h, a, ())
     go (CloudOn    cloud        ) = drawCloud         cloud         (t, h, a, ())

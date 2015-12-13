@@ -119,7 +119,7 @@ newGameState = do
     
     
     scoreSprite <- newTopLeftAligned 200 100
-           $ newEmptySprite front
+                 $ newEmptySprite front
     writeJSRef (spritePosition scoreSprite) (20, 20)
     
     dom <- getDom scoreSprite
@@ -172,6 +172,9 @@ newGameState = do
       , playerSprite     = playerSprite
       , gameHeight       = 0
       , bestGameHeight   = 0
+      
+      , scoreSprite = scoreSprite
+      , gameScore   = 0
       
       , entitiesBelow   = []
       , currentEntities = [ BirdOn onScreenBird
@@ -233,48 +236,19 @@ nextPlayerVelocity :: SpriteLike a => PlayerDirection -> a -> IO ()
 nextPlayerVelocity Straight player = (nextXVelocity (-9.6) (-0.05) player)
 nextPlayerVelocity West     player = (nextXVelocity (-9.6) (-0.8) player)
 nextPlayerVelocity East     player = (nextXVelocity  9.6  0.8 player)
-   
 
-nextGameState :: Double -> Double -> Double -> Ptr Ticker -> GameState -> IO GameState
-nextGameState t h a ticker (GameState {..}) = do
+
+nextGameState :: GameState -> IO GameState
+nextGameState (g@GameState {..}) = do
     going_left <- leftdown input
     going_right <- rightdown input
     let playerDirection' = if going_left then West else if going_right then East else Straight
-
+    
     nextPlayerVelocity playerDirection' playerSprite
 
-    return $ GameState
-      { playerStatus   = playerStatus'
-      , playerDirection= playerDirection'
-      , playerSprite   = playerSprite'
-      , gameHeight     = gameHeight'
-      , bestGameHeight = bestGameHeight'
-      
-      , entitiesBelow   = entitiesBelow'
-      , currentEntities = currentEntities'
-      , entitiesAbove   = entitiesAbove'
-      
-      , backgroundsBelow   = backgroundsBelow'
-      , currentBackgrounds = currentBackgrounds'
-      , backgroundsAbove   = backgroundsAbove'
-      , input = input'
+    return $ g
+      { playerDirection = playerDirection'
       }
-  where
-    playerStatus'   = playerStatus
-    playerSprite'   = playerSprite
-    gameHeight'     = gameHeight
-    bestGameHeight' = bestGameHeight
-    
-    entitiesBelow'   = entitiesBelow
-    currentEntities' = currentEntities
-    entitiesAbove'   = entitiesAbove
-    
-    backgroundsBelow'   = backgroundsBelow
-    currentBackgrounds' = currentBackgrounds
-    backgroundsAbove'   = backgroundsAbove
-
-    input' = input
-    
 
 drawGameState :: Double -> Double -> Double -> Ptr Ticker -> GameState -> IO ()
 drawGameState t h a ticker (GameState {..}) = do

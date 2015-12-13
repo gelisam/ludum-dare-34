@@ -25,7 +25,7 @@ gameLoop gameStateRef ticker = do
     let h = 56 * t  -- for now, the screen rises 1 unit per second. Wait, is that 1 pixel?
     let a = h  -- for now, the character ages at the same speed as the screen rises.
     
-    gameState' <- nextGameState t h a ticker gameState
+    gameState' <- nextGameState gameState
     drawGameState t h a ticker gameState'
     
     writeIORef gameStateRef gameState'

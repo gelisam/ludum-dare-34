@@ -78,7 +78,7 @@ newParallax :: SpriteLike a
             => Animation Double
             -> IO a
             -> IO (Animated a)
-newParallax anim = newAnimated $ \sprite t h _ -> do
+newParallax anim = newAnimated $ \sprite _ h _ -> do
     let meters = h / 100  -- divide by 56 to make the building scroll at the same rate as
                           -- the entities, or by a larger number to make it scroll slower
     let y = anim meters
