@@ -8,6 +8,7 @@ import Haste.Foreign
 import Text.Printf
 
 import Animation
+import Centered
 import Entities
 import GameState
 import JSRef
@@ -77,17 +78,19 @@ birdState = birdInitialX
         >>> bounce (birdWidth / 2, game_width - birdWidth / 2)
 
 
-newPlayerSprite :: CanHoldSprite a => a -> IO (Looping (Scaled NormalSprite))
+newPlayerSprite :: CanHoldSprite a => a -> IO (Looping (Scaled (Centered NormalSprite)))
 newPlayerSprite parent = do
     sprite <- newLooping parent playerImageWidth 7 5
-            $ newScaled 30 52 1.0
+            $ newScaled 1.0
+            $ newCentered 30 52
             $ newSprite parent "img/character.png"
     writeJSRef (spriteXScale sprite) (-1)
     return sprite
 
-newBirdSprite :: CanHoldSprite a => a -> IO (Looping (Scaled NormalSprite))
+newBirdSprite :: CanHoldSprite a => a -> IO (Looping (Scaled (Centered NormalSprite)))
 newBirdSprite parent = newLooping parent birdImageWidth 11 5
-                     $ newScaled birdImageWidth birdImageHeight birdScale
+                     $ newScaled birdScale
+                     $ newCentered birdImageWidth birdImageHeight
                      $ newSprite parent "img/flying-enemy.png"
 
 newParallax :: CanHoldSprite a => a -> JSString -> IO NormalSprite
@@ -98,8 +101,8 @@ newParallax parent image = do
 -- TODO: use a random balloon image instead
 newBalloonSprite :: CanHoldSprite a => a -> IO NormalSprite
 newBalloonSprite parent = do
-    balloon <- newEmptySprite parent
-    writeJSRef (spriteSize balloon) (20, 20)
+    balloon <- newTopLeftAligned 20 20
+             $ newEmptySprite parent
     
     dom <- getDom balloon
     set dom [style "border" =: "2px solid #880000"]
@@ -117,31 +120,31 @@ main = do
       back <- newLayer scene "back-1"
       front <- newLayer scene "front"
 
---      city <- newSprite front "img/city-zoomed-out.png"
---      writeJSRef (spriteSize city) (640,797)
+--      city <- newTopLeftAligned 640 797
+--            $ newSprite front "img/city-zoomed-out.png"
 --      writeJSRef (spritePosition city) (0,123)
 --      updateSprite city ()
-      mountain <- newSprite back2 "img/mountain-shadows.png"
-      writeJSRef (spriteSize mountain) (640,920)
+      mountain <- newTopLeftAligned 640 920
+                $ newSprite back2 "img/mountain-shadows.png"
       writeJSRef (spritePosition mountain) (0,0)
       updateSprite mountain ()
 
 
-      building <- newSprite back "img/city-zoomed-in.png"
-      writeJSRef (spriteSize building) (640,2856)
+      building <- newTopLeftAligned 640 2856
+                $ newSprite back "img/city-zoomed-in.png"
       writeJSRef (spritePosition building) (0, 920 - 2856)
       updateSprite building ()
 
-      building_shadow <- newSprite back2 "img/city-shadow.png"
-      writeJSRef (spriteSize building_shadow) (640,920)
+      building_shadow <- newTopLeftAligned 640 920
+                       $ newSprite back2 "img/city-shadow.png"
       writeJSRef (spritePosition building_shadow) (0,0)
       updateSprite building_shadow ()
 
       
       bird <- newBirdSprite front
       
-      score <- newEmptySprite front
-      writeJSRef (spriteSize score) (200, 100)
+      score <- newTopLeftAligned 200 100
+             $ newEmptySprite front
       writeJSRef (spritePosition score) (20, 20)
       updateSprite score ()
       
