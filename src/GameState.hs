@@ -22,6 +22,11 @@ data PlayerStatus
   | Floating Int -- number of balloons
   deriving (Show, Eq)
 
+data PlayerDirection
+  = Straight
+  | West
+  | East
+  deriving (Show, Eq)
 
 data GameState = GameState
   { gameScene      :: Ptr Scene
@@ -30,6 +35,7 @@ data GameState = GameState
   , gameFrontLayer :: Ptr Layer
   
   , playerStatus   :: PlayerStatus
+  , playerDirection:: PlayerDirection
   , playerSprite   :: Looping (Scaled (Centered NormalSprite))
   , gameHeight     :: Double
   , bestGameHeight :: Double
@@ -158,6 +164,7 @@ newGameState = do
       , gameFrontLayer = front
       
       , playerStatus     = Floating 1
+      , playerDirection  = Straight
       , playerSprite     = playerSprite
       , gameHeight       = 0
       , bestGameHeight   = 0
@@ -211,21 +218,30 @@ shuffleZipper isOffVisible isOnVisible putOnScreen takeOffScreen h (below, curre
     stillCurrent = filter (isOnVisible h >>> (== EQ)) current
     newlyAbove   = filter (isOnVisible h >>> (== GT)) current
 
+nextXVelocity :: SpriteLike a => Double -> Double -> a -> IO ()
+nextXVelocity maxV amount sprite = do
+    vx <- readJSRef (spriteXVelocity sprite)
+    let vx' = if maxV < 0 then max (vx + amount) maxV else min (vx + amount) maxV
+    writeJSRef (spriteXVelocity sprite) vx'
+    applyVelocity sprite
+
+nextPlayerVelocity :: SpriteLike a => PlayerDirection -> a -> IO () 
+nextPlayerVelocity Straight player = (nextXVelocity (-9.6) (-0.05) player)
+nextPlayerVelocity West     player = (nextXVelocity (-9.6) (-0.8) player)
+nextPlayerVelocity East     player = (nextXVelocity  9.6  0.8 player)
+   
+
 nextGameState :: Double -> Double -> Double -> Ptr Ticker -> GameState -> IO GameState
 nextGameState t h a ticker (GameState {..}) = do
-    let max_velocity = 9.6
-
     going_left <- leftdown input
     going_right <- rightdown input
+    let playerDirection' = if going_left then West else if going_right then East else Straight
 
-    p_vx <- readJSRef (spriteXVelocity playerSprite)
-    let p_vx_diff = p_vx + (if going_left then -0.8 else if going_right then 0.8 else 0)
-    let p_vx' = if (abs p_vx_diff) <= max_velocity then p_vx_diff else p_vx
-    writeJSRef (spriteXVelocity playerSprite) p_vx'
-    applyVelocity playerSprite
+    nextPlayerVelocity playerDirection' playerSprite
 
     return $ GameState
       { playerStatus   = playerStatus'
+      , playerDirection= playerDirection'
       , playerSprite   = playerSprite'
       , gameHeight     = gameHeight'
       , bestGameHeight = bestGameHeight'
