@@ -147,7 +147,9 @@ newGameState = do
     let onScreenBird = OnScreenBird birdSprite offScreenBird
     
     playerSprite <- newPlayerSprite front
-    writeJSRef (spritePosition playerSprite) (40, 200)
+    writeJSRef (spritePosition playerSprite) (300, 780)
+
+    input <- newInput scene
     
     return $ GameState
       { gameScene      = scene
@@ -171,6 +173,7 @@ newGameState = do
                              , ParallaxOn onScreenBuildingShadow
                              ]
       , backgroundsAbove   = []
+      , input = input
       }
 
 -- move game objects between the on-screen and off-screen buffers.
@@ -210,6 +213,17 @@ shuffleZipper isOffVisible isOnVisible putOnScreen takeOffScreen h (below, curre
 
 nextGameState :: Double -> Double -> Double -> Ptr Ticker -> GameState -> IO GameState
 nextGameState t h a ticker (GameState {..}) = do
+    let max_velocity = 9.6
+
+    going_left <- leftdown input
+    going_right <- rightdown input
+
+    p_vx <- readJSRef (spriteXVelocity playerSprite)
+    let p_vx_diff = p_vx + (if going_left then -0.8 else if going_right then 0.8 else 0)
+    let p_vx' = if (abs p_vx_diff) <= max_velocity then p_vx_diff else p_vx
+    writeJSRef (spriteXVelocity playerSprite) p_vx'
+    applyVelocity playerSprite
+
     return $ GameState
       { playerStatus   = playerStatus'
       , playerSprite   = playerSprite'
@@ -223,6 +237,7 @@ nextGameState t h a ticker (GameState {..}) = do
       , backgroundsBelow   = backgroundsBelow'
       , currentBackgrounds = currentBackgrounds'
       , backgroundsAbove   = backgroundsAbove'
+      , input = input'
       }
   where
     playerStatus'   = playerStatus
@@ -237,6 +252,8 @@ nextGameState t h a ticker (GameState {..}) = do
     backgroundsBelow'   = backgroundsBelow
     currentBackgrounds' = currentBackgrounds
     backgroundsAbove'   = backgroundsAbove
+
+    input' = input
     
 
 drawGameState :: Double -> Double -> Double -> Ptr Ticker -> GameState -> IO ()
