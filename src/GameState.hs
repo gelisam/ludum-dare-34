@@ -1,10 +1,12 @@
-{-# LANGUAGE OverloadedStrings, RecordWildCards #-}
+{-# LANGUAGE OverloadedStrings, RecordWildCards, LambdaCase #-}
 module GameState where
 
 import Control.Monad
 import Control.Arrow
+import Control.Monad.Extra
 import Haste.DOM
 import Haste.Prim
+import Data.Either
 
 import Animated
 import Animation
@@ -161,7 +163,6 @@ newGameState = do
 
     initialBalloon <- newBalloonSprite front
     positionBalloon playerSprite initialBalloon Straight
---    writeJSRef (spritePosition initialBalloon) (160, 400)
     
     return $ GameState
       { gameScene      = scene
@@ -236,7 +237,7 @@ nextXVelocity maxV amount sprite = do
     applyVelocity sprite
 
 nextPlayerVelocity :: SpriteLike a => PlayerDirection -> a -> IO () 
-nextPlayerVelocity Straight player = (nextXVelocity (-9.6) (-0.05) player)
+nextPlayerVelocity Straight player = (nextXVelocity (-5) (-0.05) player)
 nextPlayerVelocity West     player = (nextXVelocity (-9.6) (-0.8) player)
 nextPlayerVelocity East     player = (nextXVelocity  9.6  0.8 player)
 
@@ -255,9 +256,19 @@ nextGameState (g@GameState {..}) = do
     going_left <- leftdown input
     going_right <- rightdown input
     let playerDirection' = if going_left then West else if going_right then East else Straight
-    
     nextPlayerVelocity playerDirection' playerSprite
-    forM_ playerBalloons (\balloon -> positionBalloon playerSprite balloon playerDirection')
+  
+    -- birds, balloons
+    let (birds, _) = partitionEithers $ flip map currentEntities $ \case
+                 BirdOn bird -> Left (birdSprite bird)
+                 BalloonOn balloon -> Right (balloonSprite balloon)
+
+    remainingBalloons <- flip mapMaybeM playerBalloons $ \balloon -> do
+              positionBalloon playerSprite balloon playerDirection'
+              collides <- collidesWithList balloon birds
+              return $ if collides then Nothing else Just balloon
+
+    print $ length remainingBalloons
 
     when (playerStatus /= Falling) $ do
       writeJSRef (spriteXOffset playerSprite) $ case playerDirection' of
@@ -266,6 +277,7 @@ nextGameState (g@GameState {..}) = do
         East     -> playerImageWidth * 2
     return $ g
       { playerDirection = playerDirection'
+      , playerBalloons  = remainingBalloons
       }
 
 drawGameState :: Double -> Double -> Double -> Ptr Ticker -> GameState -> IO ()
