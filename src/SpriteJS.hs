@@ -1,7 +1,6 @@
 {-# LANGUAGE FlexibleInstances, OverloadedStrings, TypeFamilies #-}
 module SpriteJS where
 
-import Control.Monad
 import Haste.DOM
 import Haste.Foreign
 import Haste.Prim
@@ -13,7 +12,6 @@ newtype Scene = Scene JSAny
 newtype Surface = Surface JSAny
 newtype Sprite = Sprite JSAny
 newtype Layer = Layer JSAny
-newtype SpriteList = SpriteList JSAny
 newtype Input = Input JSAny
 newtype Cycle = Cycle JSAny
 newtype Ticker = Ticker JSAny
@@ -225,9 +223,6 @@ rawCollidesWith = ffi "(function(sprite,sprite2) {return sprite.collidesWith(spr
 rawCollidesWithArray :: Ptr Sprite -> [Ptr Sprite] -> IO (Maybe (Ptr Sprite))
 rawCollidesWithArray = ffi "(function(sprite,sprites) {return sprite.collidesWithArray(sprites) || null;})"
 
-rawCollidesWithSpriteList :: Ptr Sprite -> Ptr SpriteList -> IO (Maybe (Ptr Sprite))
-rawCollidesWithSpriteList = ffi "(function(sprite,sprites) {return sprite.collidesWithArray(sprites) || null;})"
-
 rawIsPointIn :: Ptr Sprite -> Int -> Int -> IO Bool
 rawIsPointIn = ffi "(function(sprite,x,y) {return sprite.isPointIn(x,y);})"
 
@@ -237,9 +232,6 @@ collidesWith sprite1 sprite2 = rawCollidesWith (rawSprite sprite1) (rawSprite sp
 -- TODO: return the original b, not the Sprite it contains
 collidesWithArray :: (SpriteLike a, SpriteLike b) => a -> [b] -> IO (Maybe (Ptr Sprite))
 collidesWithArray sprite sprites = rawCollidesWithArray (rawSprite sprite) (map rawSprite sprites)
-
-collidesWithSpriteList :: SpriteLike a => a -> Ptr SpriteList -> IO (Maybe (Ptr Sprite))
-collidesWithSpriteList sprite list = rawCollidesWithSpriteList (rawSprite sprite) list
 
 
 -- the documentation doesn't say what the name is for, is it even used?
@@ -261,26 +253,6 @@ instance HasDOM (Ptr Layer) where
 
 instance HasDOM (Ptr Sprite) where
     getDom = ffi "(function(sprite) {return sprite.dom;})"
-
-
-newSpriteList :: IO (Ptr SpriteList)
-newSpriteList = ffi "(function() {return sjs.SpriteList();})"
-
-appendToSpriteList :: Ptr SpriteList -> Ptr Sprite -> IO ()
-appendToSpriteList = ffi "(function(list,sprite) {list.add(sprite);})"
-
-removeFromSpriteList :: Ptr SpriteList -> Ptr Sprite -> IO ()
-removeFromSpriteList = ffi "(function(list,sprite) {list.remove(sprite);})"
-
-nextSprite :: Ptr SpriteList -> IO (Maybe (Ptr Sprite))
-nextSprite = ffi "(function(list) {return list.iterate() || null;})"
-
-forEachSprite :: Ptr SpriteList -> (Ptr Sprite -> IO ()) -> IO ()
-forEachSprite list body = do
-    r <- nextSprite list
-    forM_ r $ \sprite -> do
-      body sprite
-      forEachSprite list body
 
 
 newInput :: Ptr Scene -> IO (Ptr Input)
