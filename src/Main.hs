@@ -120,22 +120,22 @@ main = do
 --      city <- newSprite front "img/city-zoomed-out.png"
 --      writeJSRef (spriteSize city) (640,797)
 --      writeJSRef (spritePosition city) (0,123)
---      rawUpdateSprite city
+--      updateSprite city ()
       mountain <- newSprite back2 "img/mountain-shadows.png"
       writeJSRef (spriteSize mountain) (640,920)
       writeJSRef (spritePosition mountain) (0,0)
-      rawUpdateSprite mountain
+      updateSprite mountain ()
 
 
       building <- newSprite back "img/city-zoomed-in.png"
       writeJSRef (spriteSize building) (640,2856)
       writeJSRef (spritePosition building) (0, 920 - 2856)
-      rawUpdateSprite building
+      updateSprite building ()
 
       building_shadow <- newSprite back2 "img/city-shadow.png"
       writeJSRef (spriteSize building_shadow) (640,920)
       writeJSRef (spritePosition building_shadow) (0,0)
-      rawUpdateSprite building_shadow
+      updateSprite building_shadow ()
 
       
       bird <- newBirdSprite front
@@ -143,7 +143,7 @@ main = do
       score <- newEmptySprite front
       writeJSRef (spriteSize score) (200, 100)
       writeJSRef (spritePosition score) (20, 20)
-      rawUpdateSprite score
+      updateSprite score ()
       
       dom <- getDom score
       set dom [attr "id" =: "score"]

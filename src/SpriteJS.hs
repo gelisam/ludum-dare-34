@@ -1,7 +1,6 @@
 {-# LANGUAGE FlexibleInstances, OverloadedStrings, TypeFamilies #-}
 module SpriteJS where
 
-import Control.Arrow
 import Control.Monad
 import Haste.DOM
 import Haste.Foreign
@@ -71,34 +70,23 @@ newSprite parent image = do
     return sprite
 
 
--- minimum implementation: rawSprite
 class SpriteLike a where
     type UpdateParam a
     
     rawSprite :: a -> Ptr Sprite
     
     spriteImage    :: a -> JSRef JSString
-    spriteImage    = rawSprite >>> rawSpriteImage
     spriteSize     :: a -> JSRef (Double, Double) -- the image is cropped to this size
-    spriteSize     = rawSprite >>> rawSpriteSize
     spriteScale    :: a -> JSRef (Double, Double) -- then scaled
-    spriteScale    = rawSprite >>> rawSpriteScale
     spriteAngle    :: a -> JSRef Double -- in turns, not degrees nor radians
-    spriteAngle    = rawSprite >>> rawSpriteAngle
     spriteOpacity  :: a -> JSRef Double -- 1.0 for opaque, 0.0 for invisible
-    spriteOpacity  = rawSprite >>> rawSpriteOpacity
     
     spritePosition :: a -> JSRef (Double, Double)
-    spritePosition = rawSprite >>> rawSpritePosition
     spriteVelocity :: a -> JSRef (Double, Double)
-    spriteVelocity = rawSprite >>> rawSpriteVelocity
     applyVelocity   :: a -> IO ()
-    applyVelocity   = rawSprite >>> rawApplyVelocity
     unapplyVelocity :: a -> IO ()
-    unapplyVelocity = rawSprite >>> rawUnapplyVelocity
     
     updateSprite :: a -> UpdateParam a -> IO ()
-    updateSprite sprite _ = rawUpdateSprite (rawSprite sprite)
 
 type NormalSprite = Ptr Sprite
 
@@ -107,56 +95,39 @@ instance SpriteLike (Ptr Sprite) where
     
     rawSprite = id
 
-rawSpriteImage    :: Ptr Sprite -> JSRef JSString
-rawSpriteImage sprite = JSRef
-  { readJSRef  = ffi "(function(sprite) {return sprite.src;})" sprite
-  , writeJSRef = ffi "(function(sprite,image) {sprite.loadImg(image);})" sprite
-  }
-
-rawSpriteSize     :: Ptr Sprite -> JSRef (Double, Double) -- the image is cropped to this size
-rawSpriteSize sprite = JSRef
-  { readJSRef  = ffi "(function(sprite) {return [sprite.w, sprite.h];})" sprite
-  , writeJSRef = ffi "(function(sprite,s) {sprite.size(s[0], s[1]);})" sprite
-  }
-
-rawSpriteScale    :: Ptr Sprite -> JSRef (Double, Double) -- then scaled
-rawSpriteScale sprite = JSRef
-  { readJSRef  = ffi "(function(sprite) {return [sprite.xscale, sprite.yscale];})" sprite
-  , writeJSRef = ffi "(function(sprite,s) {sprite.scale(s[0], s[1]);})" sprite
-  }
-
-rawSpriteAngle    :: Ptr Sprite -> JSRef Double -- in turns, not degrees nor radians
-rawSpriteAngle sprite = JSRef
-  { readJSRef  = ffi "(function(sprite) {return sprite.angle / (2*Math.PI);})" sprite
-  , writeJSRef = ffi "(function(sprite,angle) {sprite.setAngle(angle * (2*Math.PI));})" sprite
-  }
-
-rawSpriteOpacity  :: Ptr Sprite -> JSRef Double -- 1.0 for opaque, 0.0 for invisible
-rawSpriteOpacity sprite = JSRef
-  { readJSRef  = ffi "(function(sprite) {return sprite.opacity;})" sprite
-  , writeJSRef = ffi "(function(sprite,opacity) {sprite.setOpacity(opacity);})" sprite
-  }
-
-rawSpritePosition :: Ptr Sprite -> JSRef (Double, Double)
-rawSpritePosition sprite = JSRef
-  { readJSRef  = ffi "(function(sprite) {return [sprite.x, sprite.y];})" sprite
-  , writeJSRef = ffi "(function(sprite,p) {sprite.position(p[0], p[1]);})" sprite
-  }
-
-rawSpriteVelocity :: Ptr Sprite -> JSRef (Double, Double)
-rawSpriteVelocity sprite = JSRef
-  { readJSRef  = ffi "(function(sprite) {return [sprite.xv, sprite.yv];})" sprite
-  , writeJSRef = ffi "(function(sprite,v) {sprite.xv = v[0]; sprite.yv = v[1];})" sprite
-  }
-
-rawApplyVelocity   :: Ptr Sprite -> IO ()
-rawApplyVelocity   = ffi "(function(sprite) {sprite.applyVelocity();})"
-
-rawUnapplyVelocity :: Ptr Sprite -> IO ()
-rawUnapplyVelocity = ffi "(function(sprite) {sprite.reverseVelocity();})"
-
-rawUpdateSprite :: Ptr Sprite -> IO ()
-rawUpdateSprite = ffi "(function(sprite) {sprite.update();})"
+    spriteImage sprite = JSRef
+      { readJSRef  = ffi "(function(sprite) {return sprite.src;})" sprite
+      , writeJSRef = ffi "(function(sprite,image) {sprite.loadImg(image);})" sprite
+      }
+    spriteSize sprite = JSRef
+      { readJSRef  = ffi "(function(sprite) {return [sprite.w, sprite.h];})" sprite
+      , writeJSRef = ffi "(function(sprite,s) {sprite.size(s[0], s[1]);})" sprite
+      }
+    spriteScale sprite = JSRef
+      { readJSRef  = ffi "(function(sprite) {return [sprite.xscale, sprite.yscale];})" sprite
+      , writeJSRef = ffi "(function(sprite,s) {sprite.scale(s[0], s[1]);})" sprite
+      }
+    spriteAngle sprite = JSRef
+      { readJSRef  = ffi "(function(sprite) {return sprite.angle / (2*Math.PI);})" sprite
+      , writeJSRef = ffi "(function(sprite,angle) {sprite.setAngle(angle * (2*Math.PI));})" sprite
+      }
+    spriteOpacity sprite = JSRef
+      { readJSRef  = ffi "(function(sprite) {return sprite.opacity;})" sprite
+      , writeJSRef = ffi "(function(sprite,opacity) {sprite.setOpacity(opacity);})" sprite
+      }
+    spritePosition sprite = JSRef
+      { readJSRef  = ffi "(function(sprite) {return [sprite.x, sprite.y];})" sprite
+      , writeJSRef = ffi "(function(sprite,p) {sprite.position(p[0], p[1]);})" sprite
+      }
+    spriteVelocity sprite = JSRef
+      { readJSRef  = ffi "(function(sprite) {return [sprite.xv, sprite.yv];})" sprite
+      , writeJSRef = ffi "(function(sprite,v) {sprite.xv = v[0]; sprite.yv = v[1];})" sprite
+      }
+    
+    applyVelocity   = ffi "(function(sprite) {sprite.applyVelocity();})"
+    unapplyVelocity = ffi "(function(sprite) {sprite.reverseVelocity();})"
+    
+    updateSprite sprite () = ffi "(function(sprite) {sprite.update();})" sprite
 
 spriteWidth :: SpriteLike a => a -> JSRef Double
 spriteWidth sprite = JSRef

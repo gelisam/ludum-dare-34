@@ -2,10 +2,11 @@
 {-# LANGUAGE TypeFamilies #-}
 module Looping where
 
+import Prelude hiding (cycle)
+
 import Control.Arrow
 import Haste.Prim
 
-import JSRef
 import SpriteJS
 
 

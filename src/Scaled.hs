@@ -63,7 +63,14 @@ newScaled w h scale mkSprite = do
 instance SpriteLike a => SpriteLike (Scaled a) where
     type UpdateParam (Scaled a) = UpdateParam a
     
-    rawSprite = sSprite >>> rawSprite
+    rawSprite       = sSprite >>> rawSprite
+    spriteImage     = sSprite >>> spriteImage
+    spriteAngle     = sSprite >>> spriteAngle
+    spriteOpacity   = sSprite >>> spriteOpacity
+    spriteVelocity  = sSprite >>> spriteVelocity
+    applyVelocity   = sSprite >>> applyVelocity
+    unapplyVelocity = sSprite >>> unapplyVelocity
+    updateSprite    = sSprite >>> updateSprite
     
     spriteSize (Scaled w h _ _) = JSRef
       { readJSRef  = return (fromIntegral w, fromIntegral h)
