@@ -5,6 +5,7 @@ module Looping where
 import Prelude hiding (cycle)
 
 import Control.Arrow
+import Control.Monad
 import Haste.Prim
 
 import SpriteJS
@@ -27,25 +28,26 @@ newLooping parent w n ticks mkSprite = do
     
     scene <- getScene parent
     cycle <- newCycle scene [(i * w, 0, ticks) | i <- [0..n-1]]
-    appendToCycle cycle (rawSprite sprite)
+    forM_ (rawSprites sprite) (appendToCycle cycle)
     
     return (Looping sprite cycle)
 
 instance SpriteLike a => SpriteLike (Looping a) where
     type UpdateParam (Looping a) = (Ptr Ticker, UpdateParam a)
     
-    rawSprite       = lSprite >>> rawSprite
-    spriteImage     = lSprite >>> spriteImage
-    spriteOffset    = lSprite >>> spriteOffset
-    spriteSize      = lSprite >>> spriteSize
-    spriteScale     = lSprite >>> spriteScale
-    spriteAngle     = lSprite >>> spriteAngle
-    spriteOpacity   = lSprite >>> spriteOpacity
+    rawSprites       = lSprite >>> rawSprites
+    collisionSprites = lSprite >>> collisionSprites
+    spriteImage      = lSprite >>> spriteImage
+    spriteOffset     = lSprite >>> spriteOffset
+    spriteSize       = lSprite >>> spriteSize
+    spriteScale      = lSprite >>> spriteScale
+    spriteAngle      = lSprite >>> spriteAngle
+    spriteOpacity    = lSprite >>> spriteOpacity
     
-    spritePosition  = lSprite >>> spritePosition
-    spriteVelocity  = lSprite >>> spriteVelocity
-    applyVelocity   = lSprite >>> applyVelocity
-    unapplyVelocity = lSprite >>> unapplyVelocity
+    spritePosition   = lSprite >>> spritePosition
+    spriteVelocity   = lSprite >>> spriteVelocity
+    applyVelocity    = lSprite >>> applyVelocity
+    unapplyVelocity  = lSprite >>> unapplyVelocity
     
     updateSprite (Looping sprite cycle) (ticker, x) = do
         updateSprite sprite x

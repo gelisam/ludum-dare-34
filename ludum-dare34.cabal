@@ -19,6 +19,7 @@ executable ludum-dare34
                      , Animation
                      , Backgrounds
                      , Constants
+                     , Control.Monad.Extra
                      , Centered
                      , Entities
                      , GameState

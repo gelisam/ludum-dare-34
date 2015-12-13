@@ -74,16 +74,17 @@ newTopLeftAligned w h mkSprite = do
 instance SpriteLike a => SpriteLike (Centered a) where
     type UpdateParam (Centered a) = UpdateParam a
     
-    rawSprite       = cSprite >>> rawSprite
-    spriteImage     = cSprite >>> spriteImage
-    spriteOffset    = cSprite >>> spriteOffset
-    spriteScale     = cSprite >>> spriteScale
-    spriteAngle     = cSprite >>> spriteAngle
-    spriteOpacity   = cSprite >>> spriteOpacity
-    spriteVelocity  = cSprite >>> spriteVelocity
-    applyVelocity   = cSprite >>> applyVelocity
-    unapplyVelocity = cSprite >>> unapplyVelocity
-    updateSprite    = cSprite >>> updateSprite
+    rawSprites       = cSprite >>> rawSprites
+    collisionSprites = cSprite >>> collisionSprites
+    spriteImage      = cSprite >>> spriteImage
+    spriteOffset     = cSprite >>> spriteOffset
+    spriteScale      = cSprite >>> spriteScale
+    spriteAngle      = cSprite >>> spriteAngle
+    spriteOpacity    = cSprite >>> spriteOpacity
+    spriteVelocity   = cSprite >>> spriteVelocity
+    applyVelocity    = cSprite >>> applyVelocity
+    unapplyVelocity  = cSprite >>> unapplyVelocity
+    updateSprite     = cSprite >>> updateSprite
     
     spriteSize (Centered _ w h) = JSRef
       { readJSRef  = return (fromIntegral w, fromIntegral h)

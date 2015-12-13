@@ -87,17 +87,18 @@ newParallax anim = newAnimated $ \sprite _ h _ -> do
 instance SpriteLike a => SpriteLike (Animated a) where
     type UpdateParam (Animated a) = (Double, Double, Double, UpdateParam a)
     
-    rawSprite       = aSprite >>> rawSprite
-    spriteImage     = aSprite >>> spriteImage
-    spriteOffset    = aSprite >>> spriteOffset
-    spriteSize      = aSprite >>> spriteSize
-    spriteScale     = aSprite >>> spriteScale
-    spriteAngle     = aSprite >>> spriteAngle
-    spriteOpacity   = aSprite >>> spriteOpacity
-    spritePosition  = aSprite >>> spritePosition
-    spriteVelocity  = aSprite >>> spriteVelocity
-    applyVelocity   = aSprite >>> applyVelocity
-    unapplyVelocity = aSprite >>> unapplyVelocity
+    rawSprites       = aSprite >>> rawSprites
+    collisionSprites = aSprite >>> collisionSprites
+    spriteImage      = aSprite >>> spriteImage
+    spriteOffset     = aSprite >>> spriteOffset
+    spriteSize       = aSprite >>> spriteSize
+    spriteScale      = aSprite >>> spriteScale
+    spriteAngle      = aSprite >>> spriteAngle
+    spriteOpacity    = aSprite >>> spriteOpacity
+    spritePosition   = aSprite >>> spritePosition
+    spriteVelocity   = aSprite >>> spriteVelocity
+    applyVelocity    = aSprite >>> applyVelocity
+    unapplyVelocity  = aSprite >>> unapplyVelocity
     
     updateSprite (Animated sprite update) (t, h, a, x) = do
         update sprite t h a

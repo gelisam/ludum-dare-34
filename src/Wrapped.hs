@@ -5,7 +5,6 @@
 {-# LANGUAGE TypeFamilies #-}
 module Wrapped where
 
-import Control.Arrow
 import Data.Fixed
 import Data.List
 import Data.Ord
@@ -68,7 +67,8 @@ outerXPosition screenWidth x = innerAndOuterXPositions screenWidth x !! 1
 instance SpriteLike a => SpriteLike (Wrapped a) where
     type UpdateParam (Wrapped a) = UpdateParam a
     
-    rawSprite = wSprite1 >>> rawSprite
+    rawSprites       (Wrapped s1 s2 _) = rawSprites       s1 ++ rawSprites       s2
+    collisionSprites (Wrapped s1 s2 _) = collisionSprites s1 ++ collisionSprites s2
     
     spriteImage    (Wrapped s1 s2 _) = syncedJSRefs (spriteImage    s1) (spriteImage    s2)
     spriteOffset   (Wrapped s1 s2 _) = syncedJSRefs (spriteOffset   s1) (spriteOffset   s2)

@@ -5,6 +5,7 @@ import Haste.DOM
 import Haste.Foreign
 import Haste.Prim
 
+import Control.Monad.Extra
 import JSRef
 
 
@@ -71,7 +72,8 @@ newSprite parent image = do
 class SpriteLike a where
     type UpdateParam a
     
-    rawSprite :: a -> Ptr Sprite
+    rawSprites       :: a -> [NormalSprite]
+    collisionSprites :: a -> [NormalSprite]
     
     spriteImage    :: a -> JSRef JSString
     spriteOffset   :: a -> JSRef (Double, Double) -- the image is cropped to this position
@@ -92,7 +94,8 @@ type NormalSprite = Ptr Sprite
 instance SpriteLike (Ptr Sprite) where
     type UpdateParam (Ptr Sprite) = ()
     
-    rawSprite = id
+    rawSprites       = return
+    collisionSprites = return
 
     spriteImage sprite = JSRef
       { readJSRef  = ffi "(function(sprite) {return sprite.src;})" sprite
@@ -227,11 +230,16 @@ rawIsPointIn :: Ptr Sprite -> Int -> Int -> IO Bool
 rawIsPointIn = ffi "(function(sprite,x,y) {return sprite.isPointIn(x,y);})"
 
 collidesWith :: (SpriteLike a, SpriteLike b) => a -> b -> IO Bool
-collidesWith sprite1 sprite2 = rawCollidesWith (rawSprite sprite1) (rawSprite sprite2)
+collidesWith sprite1 sprite2 = orM [ rawCollidesWith s1 s2
+                                   | s1 <- collisionSprites sprite1
+                                   , s2 <- collisionSprites sprite2
+                                   ]
 
--- TODO: return the original b, not the Sprite it contains
-collidesWithArray :: (SpriteLike a, SpriteLike b) => a -> [b] -> IO (Maybe (Ptr Sprite))
-collidesWithArray sprite sprites = rawCollidesWithArray (rawSprite sprite) (map rawSprite sprites)
+collidesWithList :: (SpriteLike a, SpriteLike b) => a -> [b] -> IO Bool
+collidesWithList sprite sprites = orM [ rawCollidesWith s1 s2
+                                      | s1 <- collisionSprites sprite
+                                      , s2 <- concatMap collisionSprites sprites
+                                      ]
 
 
 -- the documentation doesn't say what the name is for, is it even used?
