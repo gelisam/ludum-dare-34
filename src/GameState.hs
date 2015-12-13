@@ -1,8 +1,8 @@
 {-# LANGUAGE OverloadedStrings, RecordWildCards #-}
 module GameState where
 
-import Control.Arrow
 import Control.Monad
+import Control.Arrow
 import Haste.DOM
 import Haste.Prim
 
@@ -41,6 +41,7 @@ data GameState = GameState
   , playerStatus   :: PlayerStatus
   , playerDirection:: PlayerDirection
   , playerSprite   :: PlayerSprite
+  , playerBalloons :: [BalloonSprite]
   , gameHeight     :: Double
   , bestGameHeight :: Double
   
@@ -97,18 +98,12 @@ newBirdSprite parent offScreenBird = newDirectionalMoving (birdAnimation offScre
                                    $ newSprite parent "img/flying-enemy.png"
 
 -- TODO: use a random balloon image instead
-newBalloonSprite :: CanHoldSprite a => a -> IO NormalSprite
+newBalloonSprite :: CanHoldSprite a => a -> IO BalloonSprite
 newBalloonSprite parent = do
-    balloon <- newTopLeftAligned 20 20
-             $ newEmptySprite parent
-    
-    dom <- getDom balloon
-    set dom [style "border" =: "2px solid #880000"]
-    set dom [style "border-radius" =: "10px"]
-    set dom [style "background-color" =: "red"]
-    
+    balloon <- newScaled balloonScale
+             $ newTopLeftAligned balloonImageWidth balloonImageHeight
+             $ newSprite parent "img/balloons.png"
     return balloon
-
 
 newGameState :: IO GameState
 newGameState = do
@@ -160,6 +155,8 @@ newGameState = do
     writeJSRef (spritePosition playerSprite) (300, 780)
 
     input <- newInput scene
+
+    initialBalloon <- newBalloonSprite front
     
     return $ GameState
       { gameScene      = scene
@@ -170,6 +167,7 @@ newGameState = do
       , playerStatus     = Floating 1
       , playerDirection  = Straight
       , playerSprite     = playerSprite
+      , playerBalloons   = [initialBalloon]
       , gameHeight       = 0
       , bestGameHeight   = 0
       
@@ -251,7 +249,6 @@ nextGameState (g@GameState {..}) = do
         Straight -> 0
         West     -> playerImageWidth
         East     -> playerImageWidth * 2
-
     return $ g
       { playerDirection = playerDirection'
       }
@@ -261,6 +258,7 @@ drawGameState t h a ticker (GameState {..}) = do
     updateSprite playerSprite (ticker, ())
     mapM_ (drawOnScreenEntity     t h a ticker) currentEntities
     mapM_ (drawOnScreenBackground t h a ticker) currentBackgrounds
+    forM_ playerBalloons $ \balloon -> updateSprite balloon ()
     
     -- throws an exception for some reason?
     --dom <- getDom scoreSprite

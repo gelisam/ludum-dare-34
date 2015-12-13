@@ -31,6 +31,20 @@ playerWidth = playerScale * playerImageWidth
 playerHeight :: Double
 playerHeight = playerScale * playerImageHeight
 
+balloonScale :: Double
+balloonScale = 0.3
+
+balloonImageHeight :: Num a => a
+balloonImageHeight = 475
+
+balloonImageWidth :: Num a => a
+balloonImageWidth = 192
+
+balloonWidth :: Double
+balloonWidth = balloonScale * balloonImageWidth
+
+balloonHeight :: Double
+balloonHeight = balloonScale * balloonImageHeight
 
 birdPixelsPerSecond :: Num a => a
 birdPixelsPerSecond = 100
