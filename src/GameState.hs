@@ -1,7 +1,5 @@
 module GameState where
 
-import Haste.Prim
-
 import Entities
 import LoopingSprite
 import SpriteJS
