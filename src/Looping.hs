@@ -46,8 +46,6 @@ instance SpriteLike a => SpriteLike (Looping a) where
     
     spritePosition   = lSprite >>> spritePosition
     spriteVelocity   = lSprite >>> spriteVelocity
-    applyVelocity    = lSprite >>> applyVelocity
-    unapplyVelocity  = lSprite >>> unapplyVelocity
     
     updateSprite (Looping sprite cycle) (ticker, x) = do
         updateSprite sprite x

@@ -97,8 +97,6 @@ instance SpriteLike a => SpriteLike (Animated a) where
     spriteOpacity    = aSprite >>> spriteOpacity
     spritePosition   = aSprite >>> spritePosition
     spriteVelocity   = aSprite >>> spriteVelocity
-    applyVelocity    = aSprite >>> applyVelocity
-    unapplyVelocity  = aSprite >>> unapplyVelocity
     
     updateSprite (Animated sprite update) (t, h, a, x) = do
         update sprite t h a

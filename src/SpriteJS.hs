@@ -84,8 +84,6 @@ class SpriteLike a where
     
     spritePosition :: a -> JSRef (Double, Double)
     spriteVelocity :: a -> JSRef (Double, Double)
-    applyVelocity   :: a -> IO ()
-    unapplyVelocity :: a -> IO ()
     
     updateSprite :: a -> UpdateParam a -> IO ()
 
@@ -129,9 +127,6 @@ instance SpriteLike (Ptr Sprite) where
       { readJSRef  = ffi "(function(sprite) {return [sprite.xv, sprite.yv];})" sprite
       , writeJSRef = ffi "(function(sprite,v) {sprite.xv = v[0]; sprite.yv = v[1];})" sprite
       }
-    
-    applyVelocity   = ffi "(function(sprite) {sprite.applyVelocity();})"
-    unapplyVelocity = ffi "(function(sprite) {sprite.reverseVelocity();})"
     
     updateSprite sprite () = ffi "(function(sprite) {sprite.update();})" sprite
 
@@ -218,6 +213,22 @@ spriteYVelocity sprite = JSRef
       (xv,_) <- readJSRef (spriteVelocity sprite)
       writeJSRef (spriteVelocity sprite) (xv,yv)
   }
+
+applyVelocity   :: SpriteLike a => a -> IO ()
+applyVelocity   sprite = do
+    (x ,y ) <- readJSRef (spritePosition sprite)
+    (xv,yv) <- readJSRef (spriteVelocity sprite)
+    let x' = x + xv
+    let y' = y + yv
+    writeJSRef (spritePosition sprite) (x',y')
+
+unapplyVelocity :: SpriteLike a => a -> IO ()
+unapplyVelocity sprite = do
+    (x ,y ) <- readJSRef (spritePosition sprite)
+    (xv,yv) <- readJSRef (spriteVelocity sprite)
+    let x' = x - xv
+    let y' = y - yv
+    writeJSRef (spritePosition sprite) (x',y')
 
 
 rawCollidesWith :: Ptr Sprite -> Ptr Sprite -> IO Bool

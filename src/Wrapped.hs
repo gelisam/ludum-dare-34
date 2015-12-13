@@ -90,16 +90,3 @@ instance SpriteLike a => SpriteLike (Wrapped a) where
           writeJSRef (spritePosition s1) (innerXPosition screenWidth x, y)
           writeJSRef (spritePosition s2) (outerXPosition screenWidth x, y)
       }
-    
-    applyVelocity   (Wrapped s1 s2 screenWidth) = do
-        (x ,y ) <- readJSRef (spritePosition s1)
-        (xv,yv) <- readJSRef (spriteVelocity s1)
-        let x' = x + xv
-        let y' = y + yv
-        writeJSRef (spritePosition (Wrapped s1 s2 screenWidth)) (x',y')
-    unapplyVelocity (Wrapped s1 s2 screenWidth) = do
-        (x ,y ) <- readJSRef (spritePosition s1)
-        (xv,yv) <- readJSRef (spriteVelocity s1)
-        let x' = x - xv
-        let y' = y - yv
-        writeJSRef (spritePosition (Wrapped s1 s2 screenWidth)) (x',y')

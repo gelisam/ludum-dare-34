@@ -82,8 +82,6 @@ instance SpriteLike a => SpriteLike (Centered a) where
     spriteAngle      = cSprite >>> spriteAngle
     spriteOpacity    = cSprite >>> spriteOpacity
     spriteVelocity   = cSprite >>> spriteVelocity
-    applyVelocity    = cSprite >>> applyVelocity
-    unapplyVelocity  = cSprite >>> unapplyVelocity
     updateSprite     = cSprite >>> updateSprite
     
     spriteSize (Centered _ w h) = JSRef
