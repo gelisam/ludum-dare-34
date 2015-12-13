@@ -1197,7 +1197,12 @@ Ticker_.prototype.next = function (timestamp) {
     this.droppedFrames += Math.max(0, this.lastTicksElapsed - 1);
     this.ticksSinceLastStart += this.lastTicksElapsed;
     // add the diff to the current ticks
-    this.currentTick += this.lastTicksElapsed;
+    if (this.justResumed) {
+      // don't count the time spent while paused
+      this.justResumed = false;
+    } else {
+      this.currentTick += this.lastTicksElapsed;
+    }
     return this.lastTicksElapsed;
 };
 
@@ -1273,6 +1278,7 @@ Ticker_.prototype.resume = function () {
     this.ticksElapsed = 0;
     this.ticksSinceLastStart = 0;
     this.paused = false;
+    this.justResumed = true;
     this.run();
 };
 
