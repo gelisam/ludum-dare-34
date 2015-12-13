@@ -2,13 +2,8 @@
 module GameState where
 
 import Control.Arrow
-import Control.Monad
-import Data.IORef
-import Haste
 import Haste.DOM
 import Haste.Prim
-import Haste.Foreign
-import Text.Printf
 
 import Animated
 import Animation
@@ -18,10 +13,8 @@ import Centered
 import Entities
 import JSRef
 import Looping
-import Random
 import Scaled
 import SpriteJS
-import WindowJS
 
 
 data PlayerStatus

@@ -1,24 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
-import Control.Arrow
-import Control.Monad
 import Data.IORef
-import Haste
-import Haste.Foreign
 import Haste.Prim
-import Text.Printf
 
-import Animated
-import Animation
 import Constants
-import Centered
-import Entities
 import GameState
-import JSRef
-import Looping
-import Random
-import Scaled
 import SpriteJS
-import WindowJS
 
 
 main :: IO ()
@@ -43,4 +29,3 @@ gameLoop gameStateRef ticker = do
     drawGameState t h a ticker gameState'
     
     writeIORef gameStateRef gameState'
-    ticks `seq` t `seq` h `seq` a `seq` return ()
