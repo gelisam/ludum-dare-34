@@ -7,6 +7,7 @@ module Entities where
 import Control.Arrow
 import Haste.Prim
 
+import Wrapped
 import Animated
 import Centered
 import Looping
@@ -14,7 +15,7 @@ import Scaled
 import SpriteJS
 
 
-type BalloonSprite = Scaled (NormalSprite)
+type BalloonSprite = Wrapped (Scaled (Centered NormalSprite))
 
 data OffScreenBalloon = OffScreenBalloon
   { balloonInitialX :: Double

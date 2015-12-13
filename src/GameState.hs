@@ -100,8 +100,9 @@ newBirdSprite parent offScreenBird = newDirectionalMoving (birdAnimation offScre
 -- TODO: use a random balloon image instead
 newBalloonSprite :: CanHoldSprite a => a -> IO BalloonSprite
 newBalloonSprite parent = do
-    balloon <- newScaled balloonScale
-             $ newTopLeftAligned balloonImageWidth balloonImageHeight
+    balloon <- newWrapped game_width
+             $ newScaled balloonScale
+             $ newCentered balloonImageWidth balloonImageHeight
              $ newSprite parent "img/balloons.png"
     return balloon
 
@@ -157,6 +158,8 @@ newGameState = do
     input <- newInput scene
 
     initialBalloon <- newBalloonSprite front
+    positionBalloon playerSprite initialBalloon Straight
+--    writeJSRef (spritePosition initialBalloon) (160, 400)
     
     return $ GameState
       { gameScene      = scene
@@ -235,6 +238,15 @@ nextPlayerVelocity Straight player = (nextXVelocity (-9.6) (-0.05) player)
 nextPlayerVelocity West     player = (nextXVelocity (-9.6) (-0.8) player)
 nextPlayerVelocity East     player = (nextXVelocity  9.6  0.8 player)
 
+positionBalloon :: SpriteLike a => SpriteLike b => a -> b -> PlayerDirection -> IO ()
+positionBalloon player balloon dir = do
+    (px, py) <- readJSRef (spritePosition player)
+    let bx = px - case dir of
+                    Straight -> balloonWidth/1.5
+                    West     -> balloonWidth/1.2
+                    East     -> balloonWidth/2
+    let by = py - balloonHeight
+    writeJSRef (spritePosition balloon) (bx, by)
 
 nextGameState :: GameState -> IO GameState
 nextGameState (g@GameState {..}) = do
@@ -243,6 +255,7 @@ nextGameState (g@GameState {..}) = do
     let playerDirection' = if going_left then West else if going_right then East else Straight
     
     nextPlayerVelocity playerDirection' playerSprite
+    forM_ playerBalloons (\balloon -> positionBalloon playerSprite balloon playerDirection')
 
     when (playerStatus /= Falling) $ do
       writeJSRef (spriteXOffset playerSprite) $ case playerDirection' of
