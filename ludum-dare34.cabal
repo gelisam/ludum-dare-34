@@ -42,4 +42,4 @@ executable ludum-dare34
                      , haste-lib
   hs-source-dirs:      src
   default-language:    Haskell2010
-  GHC-options: -W -Wall -Werror --out=dist/Main.js
+  GHC-options: -W -Wall --out=dist/Main.js

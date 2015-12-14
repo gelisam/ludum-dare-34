@@ -21,6 +21,9 @@ data OffScreenEntity
   | BirdOff   OffScreenBird
   deriving (Show, Eq)
 
+offScreenEntity :: OnScreenEntity -> OffScreenEntity
+offScreenEntity (BalloonOn b) = BalloonOff $ offScreenBalloon b
+offScreenEntity (BirdOn    b) = BirdOff    $ offScreenBird    b
 
 putEntityOnScreen :: Globals -> OffScreenEntity -> IO OnScreenEntity
 putEntityOnScreen g (BalloonOff b) = BalloonOn <$> putBalloonOnScreen g b

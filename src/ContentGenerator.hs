@@ -31,7 +31,7 @@ birdStairs n x0 y0 dx dy = map (uncurry OffScreenBird)
                          $ stairs n (x0,y0) (dx,dy)
 
 generateBirds :: IO [OffScreenBird]
-generateBirds = return (birdStairs 50 200 100 100 (-200))
+generateBirds = return (birdStairs 1000 200 100 100 (-200))
 
 
 balloonStairs :: Int -- ^ length

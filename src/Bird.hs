@@ -61,8 +61,8 @@ takeBirdOffScreen (OnScreenBird {..}) = do
 
 isBirdVisible :: Double -> OffScreenBird -> Ordering
 isBirdVisible screenY (OffScreenBird _ y)
-  | y - balloonHeight / 2 > screenY               = GT
-  | y + balloonHeight / 2 < screenY + game_height = LT
+  | y + balloonHeight / 2 < screenY               = GT
+  | y - balloonHeight / 2 > screenY + game_height = LT
   | otherwise                                     = EQ
 
 isBirdStillVisible :: Double -> OnScreenBird -> Ordering

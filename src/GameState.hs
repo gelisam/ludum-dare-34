@@ -141,9 +141,9 @@ newGameState (globals@Globals {..}) = do
       , playerBalloons   = [initialBalloon]
       , playerAge        = 0
       
-      , playerYPosition = 8000 --playerInitialYPosition  -- TODO: remove me once falls are tested
+      , playerYPosition = playerInitialYPosition
       , playerYVelocity = 0
-      , screenYPosition = 8000 - playerInitialYPosition  -- playerInitialYPosition - playerInitialYPosition
+      , screenYPosition = playerInitialYPosition - playerInitialYPosition
   
       , scoreSprite = scoreSprite
       , gameScore   = 0
@@ -270,6 +270,7 @@ nextGameState (g@GameState {..}) = do
           Floating _ -> playerYPosition' - playerInitialYPosition
         screenYPosition' = screenYPosition + playerYVelocity'
         screenYPosition'' = screenYPosition' + (screenYTarget - screenYPosition') * 0.1
+        screenYNegative = -screenYPosition''  -- hack because I messed up the Y direction
 
     writeJSRef (spriteYPosition playerSprite) (playerYPosition' - screenYPosition')
     
@@ -278,6 +279,12 @@ nextGameState (g@GameState {..}) = do
         Straight -> 0
         West     -> playerImageWidth
         East     -> playerImageWidth * 2
+    
+    (entitiesBelow', currentEntities', entitiesAbove') <-
+      shuffleZipper isEntityVisible                 isEntityStillVisible
+                    (putEntityOnScreen gameGlobals) takeEntityOffScreen
+                    screenYNegative
+                    (entitiesBelow, currentEntities, entitiesAbove)
     
     return $ g
       { playerStatus    = playerStatus'
@@ -288,6 +295,10 @@ nextGameState (g@GameState {..}) = do
       , playerYPosition = playerYPosition'
       , playerYVelocity = playerYVelocity'
       , screenYPosition = screenYPosition''
+      
+      , entitiesBelow   = entitiesBelow'
+      , currentEntities = currentEntities'
+      , entitiesAbove   = entitiesAbove'
       }
 
 drawGameState :: Double -> Double -> Double -> Ptr Ticker -> GameState -> IO ()
