@@ -36,6 +36,7 @@ instance SpriteLike a => SpriteLike (Scaled a) where
     spritePosition   = sSprite >>> spritePosition
     spriteVelocity   = sSprite >>> spriteVelocity
     updateSprite     = sSprite >>> updateSprite
+    removeSprite     = sSprite >>> removeSprite
     
     spriteScale (Scaled sprite scale) = JSRef
       { readJSRef  = do

@@ -83,7 +83,8 @@ instance SpriteLike a => SpriteLike (Centered a) where
     spriteOpacity    = cSprite >>> spriteOpacity
     spriteVelocity   = cSprite >>> spriteVelocity
     updateSprite     = cSprite >>> updateSprite
-    
+    removeSprite     = cSprite >>> removeSprite
+   
     spriteSize (Centered _ w h) = JSRef
       { readJSRef  = return (fromIntegral w, fromIntegral h)
       , writeJSRef = \_ -> error "bad idea, the dimentions stored in Centered would no longer match"

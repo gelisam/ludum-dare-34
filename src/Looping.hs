@@ -43,7 +43,7 @@ instance SpriteLike a => SpriteLike (Looping a) where
     spriteScale      = lSprite >>> spriteScale
     spriteAngle      = lSprite >>> spriteAngle
     spriteOpacity    = lSprite >>> spriteOpacity
-    
+    removeSprite     = lSprite >>> removeSprite 
     spritePosition   = lSprite >>> spritePosition
     spriteVelocity   = lSprite >>> spriteVelocity
     

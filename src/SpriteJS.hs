@@ -87,6 +87,8 @@ class SpriteLike a where
     
     updateSprite :: a -> UpdateParam a -> IO ()
 
+    removeSprite :: a -> IO ()
+
 type NormalSprite = Ptr Sprite
 
 instance SpriteLike (Ptr Sprite) where
@@ -129,6 +131,11 @@ instance SpriteLike (Ptr Sprite) where
       }
     
     updateSprite sprite () = ffi "(function(sprite) {sprite.update();})" sprite
+
+    removeSprite sprite = do
+      _ <- forM (rawSprites sprite) $ \s -> rawRemove s
+      return ()  
+
 
 spriteXOffset :: SpriteLike a => a -> JSRef Double
 spriteXOffset sprite = JSRef
@@ -234,7 +241,10 @@ explode :: SpriteLike a => a -> IO [NormalSprite]
 explode sprite = do
   xxs <- forM (rawSprites sprite) $ \s -> rawExplode s
   return $ concat xxs
-    
+
+rawRemove :: Ptr Sprite -> IO ()
+rawRemove = ffi "(function(sprite){ return sprite.remove(); })"
+
 rawExplode :: Ptr Sprite -> IO [NormalSprite]
 rawExplode = ffi "(function(sprite){ return sprite.explode4(); })"
 

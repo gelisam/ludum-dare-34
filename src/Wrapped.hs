@@ -77,6 +77,10 @@ instance SpriteLike a => SpriteLike (Wrapped a) where
     spriteAngle    (Wrapped s1 s2 _) = syncedJSRefs (spriteAngle    s1) (spriteAngle    s2)
     spriteOpacity  (Wrapped s1 s2 _) = syncedJSRefs (spriteOpacity  s1) (spriteOpacity  s2)
     spriteVelocity (Wrapped s1 s2 _) = syncedJSRefs (spriteVelocity s1) (spriteVelocity s2)
+
+    removeSprite   (Wrapped s1 s2 _) = do
+      removeSprite s1
+      removeSprite s2
     
     updateSprite    (Wrapped s1 s2 _) x = do
         updateSprite s1 x

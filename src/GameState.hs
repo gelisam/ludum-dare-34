@@ -269,6 +269,7 @@ nextGameState (g@GameState {..}) = do
     remainingBalloons <- flip mapMaybeM playerBalloons $ \balloon -> do
               positionBalloon playerSprite balloon playerDirection'
               collides <- collidesWithList balloon birds
+              _ <- if collides then (removeSprite balloon) else return ()
               return $ if collides then Nothing else Just balloon
 
     print $ length remainingBalloons

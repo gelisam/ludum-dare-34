@@ -102,7 +102,10 @@ instance SpriteLike a => SpriteLike (Collidable a) where
     spriteScale      = cSprite >>> spriteScale
     spriteOpacity    = cSprite >>> spriteOpacity
     spriteVelocity   = cSprite >>> spriteVelocity
-    
+    removeSprite     (Collidable s1 s2 _ _) = do
+      removeSprite s1
+      removeSprite s2
+
     collisionSprites = cCollisionSprite >>> collisionSprites
     
     spriteAngle      = error "bad idea, the collision box would not follow"
