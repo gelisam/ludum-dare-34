@@ -8,6 +8,7 @@ import Haste.Prim
 
 import Balloon
 import Bird
+import Globals
 import SpriteJS
 
 
@@ -16,10 +17,14 @@ data OnScreenEntity
   | BirdOn    OnScreenBird
 
 data OffScreenEntity
-  = BaloonOff OffScreenBalloon
+  = BalloonOff OffScreenBalloon
   | BirdOff   OffScreenBird
   deriving (Show, Eq)
 
+
+putEntityOnScreen :: Globals -> OffScreenEntity -> IO OnScreenEntity
+putEntityOnScreen g (BalloonOff b) = BalloonOn <$> putBalloonOnScreen g b
+putEntityOnScreen g (BirdOff    b) = BirdOn    <$> putBirdOnScreen    g b
 
 drawOnScreenEntity :: Double -> Double -> Double -> Ptr Ticker -> OnScreenEntity -> IO ()
 drawOnScreenEntity t h a ticker = go

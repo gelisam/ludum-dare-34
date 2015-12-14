@@ -28,6 +28,7 @@ data OnScreenBalloon = OnScreenBalloon
   , offScreenBalloon :: OffScreenBalloon
   }
 
+
 putBalloonOnScreen :: Globals -> OffScreenBalloon -> IO OnScreenBalloon
 putBalloonOnScreen (Globals {..}) (off@(OffScreenBalloon x y)) = do
     sprite <- newMoving (pure (x,y))

@@ -27,6 +27,7 @@ data OnScreenBird = OnScreenBird
   , offScreenBird :: OffScreenBird
   }
 
+
 birdAnimation :: OffScreenBird -> Animation ((Double, Double), Bool)
 birdAnimation offScreenBird = fmap go xAndIsGoingLeft
   where
