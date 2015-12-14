@@ -4,7 +4,7 @@ module SpriteJS where
 import Haste.DOM
 import Haste.Foreign
 import Haste.Prim
-
+import Control.Monad
 import Control.Monad.Extra
 import JSRef
 
@@ -230,6 +230,13 @@ unapplyVelocity sprite = do
     let y' = y - yv
     writeJSRef (spritePosition sprite) (x',y')
 
+explode :: SpriteLike a => a -> IO [NormalSprite]
+explode sprite = do
+  xxs <- forM (rawSprites sprite) $ \s -> rawExplode s
+  return $ concat xxs
+    
+rawExplode :: Ptr Sprite -> IO [NormalSprite]
+rawExplode = ffi "(function(sprite){ return sprite.explode4(); })"
 
 rawCollidesWith :: Ptr Sprite -> Ptr Sprite -> IO Bool
 rawCollidesWith = ffi "(function(sprite,sprite2) {return sprite.collidesWith(sprite2);})"
