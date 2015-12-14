@@ -185,11 +185,11 @@ newGameState (globals@Globals {..}) = do
       , entitiesAbove   = futureEntities
       
       , backgroundsBelow   = []
-      , currentBackgrounds = [ {-ParallaxOn onScreenMountain
+      , currentBackgrounds = [ ParallaxOn onScreenMountain
                              , ParallaxOn onScreenBuilding
                              , ParallaxOn onScreenBuildingShadow
                              , ParallaxOn onScreenGameOver
-                             ,-} ParallaxOn onScreenTheEnd
+                             , ParallaxOn onScreenTheEnd
                              ]
       , backgroundsAbove   = []
       , input = input
@@ -293,9 +293,9 @@ nextGameState (g@GameState {..}) = do
 
     let remaining = map snd $ filter (\(k,_) -> k `notElem` grabbedIndices) indexedEntities
 
-    let playerStatus' = Floating 12 {-if null playerBalloons'  -- TODO: revert once ending is tested
+    let playerStatus' = if null playerBalloons'
                         then Falling
-                        else Floating (length playerBalloons')-}
+                        else Floating (length playerBalloons')
         playerYPosition' = playerYPosition + playerYVelocity
         playerYVelocity' = case playerStatus' of
           Falling    -> max (-50) (playerYVelocity - 0.5)
