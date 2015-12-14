@@ -129,13 +129,23 @@ newGameState (globals@Globals {..}) = do
                           $ newSprite globalBackLayer2 buildingShadowImage
     let onScreenBuildingShadow = OnScreenParallaxLayer buildingShadowSprite offScreenBuildingShadow
 
+    let gameOverImage = "img/game-over.png"
     let gameOverAnimation = delayed (-20)
                           $ linear 0 50
-    let offScreenGameOver = OffScreenParallaxLayer "img/game-over.png" gameOverAnimation
+    let offScreenGameOver = OffScreenParallaxLayer gameOverImage gameOverAnimation
     gameOverSprite <- newParallax gameOverAnimation
                     $ newTopLeftAligned 640 673
-                    $ newSprite globalBackLayer1 "img/game-over.png"
+                    $ newSprite globalBackLayer1 gameOverImage
     let onScreenGameOver = OnScreenParallaxLayer gameOverSprite offScreenGameOver
+
+    let theEndImage = "img/the-end.png"
+    let theEndAnimation = delayed 0
+                        $ linear (-5000) 50
+    let offScreenTheEnd = OffScreenParallaxLayer theEndImage theEndAnimation
+    theEndSprite <- newParallax theEndAnimation
+                  $ newTopLeftAligned 640 861
+                  $ newSprite globalBackLayer1 theEndImage
+    let onScreenTheEnd = OnScreenParallaxLayer theEndSprite offScreenTheEnd
     
     offScreenBalloons <- generateBalloons
     offScreenBirds <- generateBirds
@@ -175,10 +185,11 @@ newGameState (globals@Globals {..}) = do
       , entitiesAbove   = futureEntities
       
       , backgroundsBelow   = []
-      , currentBackgrounds = [ ParallaxOn onScreenMountain
+      , currentBackgrounds = [ {-ParallaxOn onScreenMountain
                              , ParallaxOn onScreenBuilding
                              , ParallaxOn onScreenBuildingShadow
                              , ParallaxOn onScreenGameOver
+                             ,-} ParallaxOn onScreenTheEnd
                              ]
       , backgroundsAbove   = []
       , input = input
