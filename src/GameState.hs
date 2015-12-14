@@ -225,20 +225,41 @@ nextGameState (g@GameState {..}) = do
     let playerDirection' = if going_left then West else if going_right then East else Straight
     nextPlayerVelocity playerDirection' playerSprite
   
+    let indexedEntities = zip [0::Int ..] currentEntities
     -- birds, balloons
-    let (birds, _) = partitionEithers $ flip map currentEntities $ \case
-                 BirdOn bird -> Left (birdSprite bird)
-                 BalloonOn balloon -> Right (balloonSprite balloon)
+    let (birds, balloons) = partitionEithers $ flip map indexedEntities $ \case
+                 (key, BirdOn bird) -> Left (key, birdSprite bird)
+                 (key, BalloonOn balloon) -> Right (key, balloonSprite balloon)
 
-    balloonCollisions <- flip mapM playerBalloons $ \balloon -> do
-          collides <- collidesWithList balloon birds
-          return $ if collides then Left balloon else Right balloon
-      
-    let (pop, keep) = partitionEithers balloonCollisions
+    popOrKeep <- flip mapM playerBalloons $ \heldBalloon -> do
+          collides <- collidesWithList heldBalloon (map snd birds)
+          return $ if collides then Left heldBalloon else Right heldBalloon
 
-    let playerStatus' = if null keep
+    let (pop, keep) = partitionEithers popOrKeep
+
+    mapM_ removeSprite pop
+    mapM_ (\b -> positionBalloon playerSprite b playerDirection') keep 
+
+    grabOrDrop <- flip mapM balloons $ \(key, balloon) -> do
+          collides <- collidesWith balloon playerSprite
+          return $ if collides then Left (key, balloon) else Right (key, balloon)
+
+    let (grab, _) = partitionEithers grabOrDrop
+
+    let grabbedIndices = map fst grab
+    let grabbedSprites = map snd grab
+    newHeldBalloons <- forM grabbedSprites $ \s -> do
+          (_, offset) <- readJSRef (spriteOffset s)
+          makeHeldBalloonSprite (globalFrontLayer gameGlobals) offset
+
+    let playerBalloons' = keep ++ newHeldBalloons
+    mapM_ removeSprite grabbedSprites
+
+    let remaining = map snd $ filter (\(k,_) -> k `notElem` grabbedIndices) indexedEntities
+
+    let playerStatus' = if null playerBalloons'
                         then Falling
-                        else Floating (length keep)
+                        else Floating (length playerBalloons')
         playerYPosition' = playerYPosition + playerYVelocity
         playerYVelocity' = case playerStatus' of
           Falling    -> max (-50) (playerYVelocity - 0.5)
@@ -249,9 +270,6 @@ nextGameState (g@GameState {..}) = do
           Floating _ -> playerYPosition' - playerInitialYPosition
         screenYPosition' = screenYPosition + playerYVelocity'
         screenYPosition'' = screenYPosition' + (screenYTarget - screenYPosition') * 0.1
-
-    mapM_ removeSprite pop
-    mapM_ (\b -> positionBalloon playerSprite b playerDirection') keep 
 
     writeJSRef (spriteYPosition playerSprite) (playerYPosition' - screenYPosition')
     
@@ -264,7 +282,8 @@ nextGameState (g@GameState {..}) = do
     return $ g
       { playerStatus    = playerStatus'
       , playerDirection = playerDirection'
-      , playerBalloons  = keep
+      , playerBalloons  = playerBalloons'
+      , currentEntities = remaining
       
       , playerYPosition = playerYPosition'
       , playerYVelocity = playerYVelocity'
