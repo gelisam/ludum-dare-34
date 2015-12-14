@@ -4,6 +4,7 @@ import Haste.Prim
 
 import Constants
 import GameState
+import GameEntity
 import Globals
 import SpriteJS
 
