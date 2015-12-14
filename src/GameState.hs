@@ -74,7 +74,7 @@ computeSeconds ticks = fromIntegral ticks / fps
 newPlayerSprite :: CanHoldSprite a => a -> IO PlayerSprite
 newPlayerSprite parent = do
     sprite <- newWrapped game_width
-            $ newCollidable parent (13 - 5 - playerImageWidth `div` 2) (67 - 5 - playerImageHeight `div` 2) 10 10
+            $ newCollidable parent (13 - 10 - playerImageWidth `div` 2) (67 - 10 - playerImageHeight `div` 2) 20 20
             $ newLooping parent playerImageWidth 1 5
             $ newScaled 1.0
             $ newCentered playerImageWidth playerImageHeight
