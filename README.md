@@ -20,7 +20,7 @@ Good.
 
 So, how did the game make you feel? Yeah, I know!
 
-Some of it was intended from the start, but some of it just sort of happened as we wrote it.
+Some of it was intended from the start, but most of it is a reinterpretation of decisions we made for other reasons.
 
 Here are all the bits of the Growing Up methaphor I know of in this game. If you see another, please add it as a comment [here](http://ludumdare.com/compo/ludum-dare-34/?action=preview&uid=46246).
 
