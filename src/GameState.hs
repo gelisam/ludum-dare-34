@@ -297,7 +297,7 @@ nextGameState (g@GameState {..}) = do
 
     let remaining = map snd $ filter (\(k,_) -> k `notElem` grabbedIndices) indexedEntities
 
-    let playerStatus' = if null playerBalloons'
+    let playerStatus' = if null playerBalloons' && ageOffset < 7
                         then Falling
                         else Floating (length playerBalloons')
         invincibilityFrames' = if playerStatus == Falling && playerStatus' /= Falling
