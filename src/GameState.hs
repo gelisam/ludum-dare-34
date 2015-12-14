@@ -48,6 +48,7 @@ data GameState = GameState
   , playerSprite   :: (PlayerSprite, PlayerSprite)
   , playerBalloons :: [HeldBalloonSprite]
   , playerAge      :: Double
+  , invincibilityFrames :: Int
   
   , playerYPosition :: Double
   , playerYVelocity :: Double
@@ -171,6 +172,7 @@ newGameState (globals@Globals {..}) = do
       , playerSprite     = (playerSprite, fallingSprite)
       , playerBalloons   = [initialBalloon]
       , playerAge        = 0
+      , invincibilityFrames = 0
 
       
       , playerYPosition = playerInitialYPosition
@@ -269,7 +271,9 @@ nextGameState (g@GameState {..}) = do
     let ageOffset = min 7 (floor (playerAge / 1400))
     popOrKeep <- flip mapM playerBalloons $ \heldBalloon -> do
           collides <- collidesWithList heldBalloon (map snd birds)
-          return $ if ageOffset < 7 && collides then Left heldBalloon else Right heldBalloon
+          return $ if ageOffset < 7 && invincibilityFrames == 0 && collides
+                   then Left heldBalloon
+                   else Right heldBalloon
 
     let (pop, keep) = partitionEithers popOrKeep
 
@@ -296,6 +300,9 @@ nextGameState (g@GameState {..}) = do
     let playerStatus' = if null playerBalloons'
                         then Falling
                         else Floating (length playerBalloons')
+        invincibilityFrames' = if playerStatus == Falling && playerStatus' /= Falling
+                               then 50
+                               else max 0 (invincibilityFrames - 1)
         playerYPosition' = playerYPosition + playerYVelocity
         playerYVelocity' = case playerStatus' of
           Falling    -> max (-50) (playerYVelocity - 0.5)
@@ -324,11 +331,11 @@ nextGameState (g@GameState {..}) = do
                     (entitiesBelow, remaining, entitiesAbove)
     
     if (playerStatus /= Falling) then do
-      writeJSRef (spriteOpacity (fst playerSprite)) 100
+      writeJSRef (spriteOpacity (fst playerSprite)) (if invincibilityFrames' `mod` 10 > 5 then 0 else 100)
       writeJSRef (spriteOpacity (snd playerSprite)) 0
     else do
       writeJSRef (spriteOpacity (fst playerSprite)) 0
-      writeJSRef (spriteOpacity (snd playerSprite)) 100
+      writeJSRef (spriteOpacity (snd playerSprite)) (if invincibilityFrames' `mod` 10 > 5 then 0 else 100)
 
     let playerAge' = max playerAge screenYPosition
     -- age every 1400 pixels
@@ -351,6 +358,7 @@ nextGameState (g@GameState {..}) = do
       , playerDirection = playerDirection'
       , playerBalloons  = playerBalloons'
       , playerAge       = playerAge'
+      , invincibilityFrames = invincibilityFrames'
       
       , playerYPosition = playerYPosition'
       , playerYVelocity = playerYVelocity'
