@@ -46,8 +46,11 @@ data GameState = GameState
   , playerDirection:: PlayerDirection
   , playerSprite   :: PlayerSprite
   , playerBalloons :: [BalloonSprite]
-  , gameHeight     :: Double
-  , bestGameHeight :: Double
+  , playerAge      :: Double
+  
+  , playerYPosition :: Double
+  , playerYVelocity :: Double
+  , screenYPosition :: Double
   
   , scoreSprite :: NormalSprite
   , gameScore   :: Double
@@ -161,7 +164,7 @@ newGameState = do
       return $ OnScreenBird birdSprite offScreenBird
     
     playerSprite <- newPlayerSprite front
-    writeJSRef (spritePosition playerSprite) (300, 780)
+    writeJSRef (spritePosition playerSprite) (playerInitialXPosition, playerInitialYPosition)
 
     input <- newInput scene
 
@@ -178,9 +181,12 @@ newGameState = do
       , playerDirection  = Straight
       , playerSprite     = playerSprite
       , playerBalloons   = [initialBalloon]
-      , gameHeight       = 0
-      , bestGameHeight   = 0
+      , playerAge        = 0
       
+      , playerYPosition = playerInitialYPosition
+      , playerYVelocity = 0
+      , screenYPosition = 0
+  
       , scoreSprite = scoreSprite
       , gameScore   = 0
       
@@ -273,15 +279,30 @@ nextGameState (g@GameState {..}) = do
               return $ if collides then Nothing else Just balloon
 
     print $ length remainingBalloons
+    
+    let playerStatus' = if null remainingBalloons
+                        then Falling
+                        else Floating (length remainingBalloons)
+        playerYPosition' = playerYPosition + playerYVelocity
+        playerYVelocity' = 56 / 25
+        screenYPosition' = playerYPosition' - playerInitialYPosition
 
+    writeJSRef (spriteYPosition playerSprite) (playerYPosition' - screenYPosition')
+    
     when (playerStatus /= Falling) $ do
       writeJSRef (spriteXOffset playerSprite) $ case playerDirection' of
         Straight -> 0
         West     -> playerImageWidth
         East     -> playerImageWidth * 2
+    
     return $ g
-      { playerDirection = playerDirection'
+      { playerStatus    = playerStatus'
+      , playerDirection = playerDirection'
       , playerBalloons  = remainingBalloons
+      
+      , playerYPosition = playerYPosition'
+      , playerYVelocity = playerYVelocity'
+      , screenYPosition = screenYPosition'
       }
 
 drawGameState :: Double -> Double -> Double -> Ptr Ticker -> GameState -> IO ()

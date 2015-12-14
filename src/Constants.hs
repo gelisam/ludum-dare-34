@@ -13,6 +13,7 @@ gravity = 0 -- 0.5
 fps :: Num a => a
 fps = 25
 
+
 playerPixelsPerSecond :: Num a => a
 playerPixelsPerSecond = 100
 
@@ -30,6 +31,13 @@ playerWidth = playerScale * playerImageWidth
 
 playerHeight :: Double
 playerHeight = playerScale * playerImageHeight
+
+playerInitialXPosition :: Num a => a
+playerInitialXPosition = 300
+
+playerInitialYPosition :: Num a => a
+playerInitialYPosition = 780
+
 
 balloonScale :: Double
 balloonScale = 0.3
