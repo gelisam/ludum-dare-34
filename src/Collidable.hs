@@ -18,7 +18,7 @@ import SpriteJS
 
 -- set to True to make the collision boxes visible
 debugCollisionBoxes :: Bool
-debugCollisionBoxes = True
+debugCollisionBoxes = False
 
 
 -- we need two sprites because when the Collidable sprite is touching the
