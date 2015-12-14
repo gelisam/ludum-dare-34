@@ -6,7 +6,6 @@
 module Random where
 
 import Data.IORef
-import Data.Tuple
 import Haste
 import System.IO.Unsafe
 
