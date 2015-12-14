@@ -138,7 +138,8 @@ newGameState (globals@Globals {..}) = do
     let onScreenMountain = OnScreenParallaxLayer mountainSprite offScreenMountain
     
     let buildingImage = "img/city-zoomed-in.png"
-    let buildingAnimation = linear (920 - 2856) 56
+    let buildingAnimation = delayed 0
+                          $ linear (920 - 2856) 56
     let offScreenBuilding = OffScreenParallaxLayer buildingImage buildingAnimation
     buildingSprite <- newParallax buildingAnimation
                     $ newTopLeftAligned 640 2856
