@@ -38,6 +38,28 @@ playerInitialXPosition = 300
 playerInitialYPosition :: Num a => a
 playerInitialYPosition = 780
 
+fallingPlayerScale :: Double
+fallingPlayerScale = 1
+
+fallingPlayerImageWidth :: Num a => a
+fallingPlayerImageWidth = 468
+
+fallingPlayerImageHeight :: Num a => a
+fallingPlayerImageHeight = 300
+
+fallingPlayerWidth :: Double
+fallingPlayerWidth = fallingPlayerScale * fallingPlayerImageWidth
+
+fallingPlayerHeight :: Double
+fallingPlayerHeight = fallingPlayerScale * fallingPlayerImageHeight
+
+fallingPlayerInitialXPosition :: Num a => a
+fallingPlayerInitialXPosition = 300
+
+fallingPlayerInitialYPosition :: Num a => a
+fallingPlayerInitialYPosition = 780
+
+
 
 balloonScale :: Double
 balloonScale = 0.3

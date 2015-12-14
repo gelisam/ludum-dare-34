@@ -44,7 +44,7 @@ data GameState = GameState
   
   , playerStatus   :: PlayerStatus
   , playerDirection:: PlayerDirection
-  , playerSprite   :: PlayerSprite
+  , playerSprite   :: (PlayerSprite, PlayerSprite)
   , playerBalloons :: [HeldBalloonSprite]
   , playerAge      :: Double
   
@@ -80,6 +80,17 @@ newPlayerSprite parent = do
             $ newCentered playerImageWidth playerImageHeight
             $ newSprite parent "img/up.png"
     return sprite
+
+newFallingPlayerSprite :: CanHoldSprite a => a -> IO PlayerSprite
+newFallingPlayerSprite parent = do
+    sprite <- newWrapped game_width
+            $ newCollidable parent (13 - 5 - playerImageWidth `div` 2) (67 - 5 - playerImageHeight `div` 2) 10 10
+            $ newLooping parent playerImageWidth 4 5
+            $ newScaled 1.0
+            $ newCentered playerImageWidth playerImageHeight
+            $ newSprite parent "img/down.png"
+    return sprite
+
 
 newGameState :: Globals -> IO GameState
 newGameState (globals@Globals {..}) = do
@@ -127,6 +138,9 @@ newGameState (globals@Globals {..}) = do
     playerSprite <- newPlayerSprite globalFrontLayer
     writeJSRef (spritePosition playerSprite) (playerInitialXPosition, playerInitialYPosition)
 
+    fallingSprite <- newFallingPlayerSprite globalFrontLayer
+    writeJSRef (spritePosition fallingSprite) (playerInitialXPosition, playerInitialYPosition)
+
     input <- newInput globalScene
 
     initialBalloon <- newHeldBalloonSprite globalFrontLayer 3
@@ -137,9 +151,10 @@ newGameState (globals@Globals {..}) = do
       
       , playerStatus     = Floating 1
       , playerDirection  = Straight
-      , playerSprite     = playerSprite
+      , playerSprite     = (playerSprite, fallingSprite)
       , playerBalloons   = [initialBalloon]
       , playerAge        = 0
+
       
       , playerYPosition = playerInitialYPosition
       , playerYVelocity = 0
@@ -223,8 +238,9 @@ nextGameState (g@GameState {..}) = do
     going_left <- leftdown input
     going_right <- rightdown input
     let playerDirection' = if going_left then West else if going_right then East else Straight
-    nextPlayerVelocity playerDirection' playerSprite
-  
+    nextPlayerVelocity playerDirection' $ fst playerSprite
+    nextPlayerVelocity playerDirection' $ snd playerSprite
+
     let indexedEntities = zip [0::Int ..] currentEntities
     -- birds, balloons
     let (birds, balloons) = partitionEithers $ flip map indexedEntities $ \case
@@ -238,10 +254,10 @@ nextGameState (g@GameState {..}) = do
     let (pop, keep) = partitionEithers popOrKeep
 
     mapM_ removeSprite pop
-    mapM_ (\b -> positionBalloon playerSprite b playerDirection') keep 
+    mapM_ (\b -> positionBalloon (fst playerSprite) b playerDirection') keep 
 
     grabOrDrop <- flip mapM balloons $ \(key, balloon) -> do
-          collides <- collidesWith balloon playerSprite
+          collides <- collidesWith balloon (fst playerSprite)
           return $ if collides then Left (key, balloon) else Right (key, balloon)
 
     let (grab, _) = partitionEithers grabOrDrop
@@ -272,10 +288,11 @@ nextGameState (g@GameState {..}) = do
         screenYPosition'' = screenYPosition' + (screenYTarget - screenYPosition') * 0.1
         screenYNegative = -screenYPosition''  -- hack because I messed up the Y direction
 
-    writeJSRef (spriteYPosition playerSprite) (playerYPosition' - screenYPosition')
-    
+    writeJSRef (spriteYPosition (fst playerSprite)) (playerYPosition' - screenYPosition')
+    writeJSRef (spriteYPosition (snd playerSprite)) (playerYPosition' - screenYPosition')
+   
     when (playerStatus /= Falling) $ do
-      writeJSRef (spriteXOffset playerSprite) $ case playerDirection' of
+      writeJSRef (spriteXOffset (fst playerSprite)) $ case playerDirection' of
         Straight -> 0
         West     -> playerImageWidth
         East     -> playerImageWidth * 2
@@ -286,6 +303,13 @@ nextGameState (g@GameState {..}) = do
                     screenYNegative
                     (entitiesBelow, remaining, entitiesAbove)
     
+    if (playerStatus /= Falling) then do
+      writeJSRef (spriteOpacity (fst playerSprite)) 100
+      writeJSRef (spriteOpacity (snd playerSprite)) 0
+    else do
+      writeJSRef (spriteOpacity (fst playerSprite)) 0
+      writeJSRef (spriteOpacity (snd playerSprite)) 100
+
     return $ g
       { playerStatus    = playerStatus'
       , playerDirection = playerDirection'
@@ -302,7 +326,8 @@ nextGameState (g@GameState {..}) = do
 
 drawGameState :: Double -> Double -> Double -> Ptr Ticker -> GameState -> IO ()
 drawGameState t h a ticker (GameState {..}) = do
-    updateSprite playerSprite (ticker, ())
+    updateSprite (fst playerSprite) (ticker, ())
+    updateSprite (snd playerSprite) (ticker, ())
     mapM_ (drawOnScreenEntity     t h a ticker) currentEntities
     mapM_ (drawOnScreenBackground t h a ticker) currentBackgrounds
     forM_ playerBalloons $ \balloon -> updateSprite balloon ()
