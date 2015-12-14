@@ -2,7 +2,7 @@
 
 # Growing Up
 
-This is our [contribution](http://ludumdare.com/compo/ludum-dare-34/?action=preview&uid=46246) for [Ludum Dare edition #34](http://ludumdare.com/compo/2015/12/09/welcome-to-ludum-dare-34/). We participated in the Jam, in which teams have 72 hours to make a game based on a theme. This year there was a choice between two themes, "two button controls" and "growing". So we picked both :)
+This is our [contribution](http://ludumdare.com/compo/ludum-dare-34/?action=preview&uid=46246) for [Ludum Dare edition #34](http://ludumdare.com/compo/2015/12/09/welcome-to-ludum-dare-34/). We participated in the Jam, in which teams have 72 hours to make a game based on a theme. For this edition there was a choice between two themes, "two button controls" and "growing". So we picked both :)
 
 Play it [here](http://gelisam.com/ludum-dare-34)!
 
