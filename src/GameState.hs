@@ -16,6 +16,7 @@ import Collidable
 import Constants
 import ContentGenerator
 import Centered
+import Data.List.Extra
 import Entities
 import Globals
 import HeldBalloon
@@ -136,11 +137,10 @@ newGameState (globals@Globals {..}) = do
                     $ newSprite globalBackLayer1 "img/game-over.png"
     let onScreenGameOver = OnScreenParallaxLayer gameOverSprite offScreenGameOver
     
-    offScreenBirds <- generateBirds
-    onScreenBirds <- mapM (putBirdOnScreen globals) offScreenBirds
-
     offScreenBalloons <- generateBalloons
-    onScreenBalloons <- mapM (putBalloonOnScreen globals) offScreenBalloons
+    offScreenBirds <- generateBirds
+    let futureEntities = mergeOn entityYPosition (map BalloonOff offScreenBalloons)
+                                                 (map BirdOff    offScreenBirds   )
     
     playerSprite <- newPlayerSprite globalFrontLayer
     writeJSRef (spritePosition playerSprite) (playerInitialXPosition, playerInitialYPosition)
@@ -171,8 +171,8 @@ newGameState (globals@Globals {..}) = do
       , gameScore   = 0
       
       , entitiesBelow   = []
-      , currentEntities = (map BirdOn onScreenBirds) ++ (map BalloonOn onScreenBalloons)
-      , entitiesAbove   = []
+      , currentEntities = []
+      , entitiesAbove   = futureEntities
       
       , backgroundsBelow   = []
       , currentBackgrounds = [ ParallaxOn onScreenMountain

@@ -69,5 +69,9 @@ isBirdStillVisible :: Double -> OnScreenBird -> Ordering
 isBirdStillVisible screenY = offScreenBird >>> isBirdVisible screenY
 
 
+birdYPosition :: OffScreenBird -> Double
+birdYPosition = birdInitialY
+
+
 drawBird :: OnScreenBird -> UpdateParam BirdSprite -> IO ()
 drawBird = birdSprite >>> updateSprite

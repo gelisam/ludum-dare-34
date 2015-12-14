@@ -25,6 +25,7 @@ executable ludum-dare34
                      , ContentGenerator
                      , Control.Monad.Extra
                      , Centered
+                     , Data.List.Extra
                      , Entities
                      , GameState
                      , Globals

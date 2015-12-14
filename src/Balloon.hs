@@ -50,12 +50,16 @@ takeBalloonOffScreen (OnScreenBalloon {..}) = do
 
 isBalloonVisible :: Double -> OffScreenBalloon -> Ordering
 isBalloonVisible screenY (OffScreenBalloon _ y)
-  | y - balloonHeight / 2 > screenY               = GT
-  | y + balloonHeight / 2 < screenY + game_height = LT
+  | y + balloonHeight / 2 < screenY               = GT
+  | y - balloonHeight / 2 > screenY + game_height = LT
   | otherwise                                     = EQ
 
 isBalloonStillVisible :: Double -> OnScreenBalloon -> Ordering
 isBalloonStillVisible screenY = offScreenBalloon >>> isBalloonVisible screenY
+
+
+balloonYPosition :: OffScreenBalloon -> Double
+balloonYPosition = balloonInitialY
 
 
 drawBalloon :: OnScreenBalloon -> UpdateParam BalloonSprite -> IO ()

@@ -43,6 +43,11 @@ isEntityStillVisible screenY (BalloonOn b) = isBalloonStillVisible screenY b
 isEntityStillVisible screenY (BirdOn    b) = isBirdStillVisible    screenY b
 
 
+entityYPosition :: OffScreenEntity -> Double
+entityYPosition (BalloonOff b) = balloonYPosition b
+entityYPosition (BirdOff    b) = birdYPosition    b
+
+
 drawOnScreenEntity :: Double -> Double -> Double -> Ptr Ticker -> OnScreenEntity -> IO ()
 drawOnScreenEntity t h a ticker = go
   where
