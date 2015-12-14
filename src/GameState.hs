@@ -68,20 +68,6 @@ data GameState = GameState
 computeSeconds :: Int -> Double
 computeSeconds ticks = fromIntegral ticks / fps
 
-birdAnimation :: OffScreenBird -> Animation ((Double, Double), Bool)
-birdAnimation offScreenBird = fmap go xAndIsGoingLeft
-  where
-    xAndIsGoingLeft :: Animation (Double, Bool)
-    xAndIsGoingLeft = bounce (birdWidth / 2, game_width - birdWidth / 2)
-                    $ flip linear birdPixelsPerSecond
-                    $ birdInitialX offScreenBird
-    
-    go :: (Double,Bool) -> ((Double, Double), Bool)
-    go (x,isGoingLeft) = ((x,y),isFlipped)
-      where
-        y = birdInitialY offScreenBird
-        isFlipped = not isGoingLeft
-
 
 newPlayerSprite :: CanHoldSprite a => a -> IO PlayerSprite
 newPlayerSprite parent = do
@@ -92,17 +78,6 @@ newPlayerSprite parent = do
             $ newCentered playerImageWidth playerImageHeight
             $ newSprite parent "img/up.png"
     return sprite
-
-newBirdSprite :: CanHoldSprite a
-              => a
-              -> OffScreenBird
-              -> IO (BirdSprite)
-newBirdSprite parent offScreenBird = newDirectionalMoving (birdAnimation offScreenBird)
-                                   $ newCollidable parent (-32) (-32) 64 64
-                                   $ newLooping parent birdImageWidth 11 5
-                                   $ newScaled birdScale
-                                   $ newCentered birdImageWidth birdImageHeight
-                                   $ newSprite parent "img/flying-enemy.png"
 
 newGameState :: Globals -> IO GameState
 newGameState (globals@Globals {..}) = do
@@ -142,9 +117,7 @@ newGameState (globals@Globals {..}) = do
     let onScreenBuildingShadow = OnScreenParallaxLayer buildingShadowSprite offScreenBuildingShadow
     
     offScreenBirds <- generateBirds
-    onScreenBirds <- forM offScreenBirds $ \offScreenBird -> do
-      birdSprite <- newBirdSprite globalFrontLayer offScreenBird
-      return $ OnScreenBird birdSprite offScreenBird
+    onScreenBirds <- mapM (putBirdOnScreen globals) offScreenBirds
 
     offScreenBalloons <- generateBalloons
     onScreenBalloons <- mapM (putBalloonOnScreen globals) offScreenBalloons

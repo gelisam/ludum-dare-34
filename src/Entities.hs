@@ -9,6 +9,7 @@ import Control.Arrow
 import Haste.Prim
 
 import Animated
+import Animation
 import Collidable
 import Constants
 import Centered
@@ -63,6 +64,30 @@ data OnScreenBird = OnScreenBird
   { birdSprite    :: BirdSprite
   , offScreenBird :: OffScreenBird
   }
+
+birdAnimation :: OffScreenBird -> Animation ((Double, Double), Bool)
+birdAnimation offScreenBird = fmap go xAndIsGoingLeft
+  where
+    xAndIsGoingLeft :: Animation (Double, Bool)
+    xAndIsGoingLeft = bounce (birdWidth / 2, game_width - birdWidth / 2)
+                    $ flip linear birdPixelsPerSecond
+                    $ birdInitialX offScreenBird
+    
+    go :: (Double,Bool) -> ((Double, Double), Bool)
+    go (x,isGoingLeft) = ((x,y),isFlipped)
+      where
+        y = birdInitialY offScreenBird
+        isFlipped = not isGoingLeft
+
+putBirdOnScreen :: Globals -> OffScreenBird -> IO OnScreenBird
+putBirdOnScreen (Globals {..}) off = do
+    sprite <- newDirectionalMoving (birdAnimation off)
+            $ newCollidable globalEntityLayer (-32) (-32) 64 64
+            $ newLooping globalEntityLayer birdImageWidth 11 5
+            $ newScaled birdScale
+            $ newCentered birdImageWidth birdImageHeight
+            $ newSprite globalEntityLayer "img/flying-enemy.png"
+    return (OnScreenBird sprite off)
 
 drawBird :: OnScreenBird -> UpdateParam BirdSprite -> IO ()
 drawBird = birdSprite >>> updateSprite
