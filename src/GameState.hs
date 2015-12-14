@@ -284,13 +284,12 @@ nextGameState (g@GameState {..}) = do
       shuffleZipper isEntityVisible                 isEntityStillVisible
                     (putEntityOnScreen gameGlobals) takeEntityOffScreen
                     screenYNegative
-                    (entitiesBelow, currentEntities, entitiesAbove)
+                    (entitiesBelow, remaining, entitiesAbove)
     
     return $ g
       { playerStatus    = playerStatus'
       , playerDirection = playerDirection'
       , playerBalloons  = playerBalloons'
-      , currentEntities = remaining
       
       , playerYPosition = playerYPosition'
       , playerYVelocity = playerYVelocity'
