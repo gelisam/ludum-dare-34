@@ -232,17 +232,23 @@ shuffleZipper isOffVisible isOnVisible putOnScreen takeOffScreen h (below, curre
     stillCurrent = filter (isOnVisible h >>> (== EQ)) current
     newlyAbove   = filter (isOnVisible h >>> (== GT)) current
 
-nextXVelocity :: SpriteLike a => Double -> Double -> a -> IO ()
-nextXVelocity maxV amount sprite = do
+nextXVelocity :: SpriteLike a => Int -> Double -> Double -> Double -> a -> IO ()
+nextXVelocity ageOffset minV maxV amount sprite = do
     vx <- readJSRef (spriteXVelocity sprite)
-    let vx' = if maxV < 0 then max (vx + amount) maxV else min (vx + amount) maxV
+    let vx' = min (max (vx + amount) minV) maxV
     writeJSRef (spriteXVelocity sprite) vx'
     applyVelocity sprite
 
-nextPlayerVelocity :: SpriteLike a => PlayerDirection -> a -> IO () 
-nextPlayerVelocity Straight player = (nextXVelocity (-5) (-0.05) player)
-nextPlayerVelocity West     player = (nextXVelocity (-9.6) (-0.8) player)
-nextPlayerVelocity East     player = (nextXVelocity  9.6  0.8 player)
+nextPlayerVelocity :: SpriteLike a => Int -> PlayerDirection -> a -> IO () 
+nextPlayerVelocity ageOffset = go
+  where
+    playerWeightFactor = (8 - fromIntegral ageOffset / 1.5) / 8
+    interpolate frac x0 x1 = (1 - frac) * x0 + frac * x1
+    go Straight player = (nextXVelocity ageOffset (-5) 9.6 (-0.05) player)
+    go West     player = (nextXVelocity ageOffset (interpolate playerWeightFactor (-5) (-9.6))
+                                                  (interpolate playerWeightFactor (-5)   9.6 ) (-0.8) player)
+    go East     player = (nextXVelocity ageOffset (interpolate playerWeightFactor (-5) (-9.6))
+                                                  (interpolate playerWeightFactor (-5)   9.6 )   0.8  player)
 
 positionBalloon :: SpriteLike a => SpriteLike b => a -> b -> PlayerDirection -> IO ()
 positionBalloon player balloon dir = do
@@ -256,11 +262,13 @@ positionBalloon player balloon dir = do
 
 nextGameState :: GameState -> IO GameState
 nextGameState (g@GameState {..}) = do
+    let ageOffset = min 7 (floor (playerAge / 1400))
+    
     going_left <- leftdown input
     going_right <- rightdown input
     let playerDirection' = if going_left then West else if going_right then East else Straight
-    nextPlayerVelocity playerDirection' $ fst playerSprite
-    nextPlayerVelocity playerDirection' $ snd playerSprite
+    nextPlayerVelocity ageOffset playerDirection' $ fst playerSprite
+    nextPlayerVelocity ageOffset playerDirection' $ snd playerSprite
 
     let indexedEntities = zip [0::Int ..] currentEntities
     -- birds, balloons
@@ -268,7 +276,6 @@ nextGameState (g@GameState {..}) = do
                  (key, BirdOn bird) -> Left (key, birdSprite bird)
                  (key, BalloonOn balloon) -> Right (key, balloonSprite balloon)
 
-    let ageOffset = min 7 (floor (playerAge / 1400))
     popOrKeep <- flip mapM playerBalloons $ \heldBalloon -> do
           collides <- collidesWithList heldBalloon (map snd birds)
           return $ if ageOffset < 7 && invincibilityFrames == 0 && collides
