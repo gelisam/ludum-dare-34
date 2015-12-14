@@ -25,6 +25,7 @@ executable ludum-dare34
                      , Centered
                      , Entities
                      , GameState
+                     , Globals
                      , JSRef
                      , Looping
                      , Random

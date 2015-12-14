@@ -4,15 +4,34 @@ import Haste.Prim
 
 import Constants
 import GameState
+import Globals
 import SpriteJS
 
 
 main :: IO ()
 main = do
-    initialGameState <- newGameState
-    gameStateRef <- newIORef initialGameState
-    let scene = gameScene initialGameState
-    loadImages scene ["img/up.png", "img/flying-enemy.png"] $ do
+    globals <- newGlobals
+    let scene = globalScene globals
+    loadImages scene [ "img/balloons.png"
+                     , "img/city-shadow.png"
+                     , "img/city-zoomed-in.png"
+                     , "img/city-zoomed-out.png"
+                     , "img/cloud-l.png"
+                     , "img/cloud-m.png"
+                     , "img/cloud-s.png"
+                     , "img/down.png"
+                     , "img/flying-enemy.png"
+                     , "img/game-over.png"
+                     , "img/mountain-shadows.png"
+                     , "img/sky.jpg"
+                     , "img/stars.png"
+                     , "img/the-end.png"
+                     , "img/title.png"
+                     , "img/up.png"
+                     , "img/wind.png"
+                     ] $ do
+      initialGameState <- newGameState globals
+      gameStateRef <- newIORef initialGameState
       ticker <- newTicker scene fps (gameLoop gameStateRef)
       runTicker ticker
 

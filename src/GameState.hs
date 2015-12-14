@@ -15,6 +15,7 @@ import Constants
 import ContentGenerator
 import Centered
 import Entities
+import Globals
 import JSRef
 import Looping
 import Scaled
@@ -37,10 +38,7 @@ data PlayerDirection
 type PlayerSprite = Wrapped (Collidable (Looping (Scaled (Centered NormalSprite))))
 
 data GameState = GameState
-  { gameScene      :: Ptr Scene
-  , gameBackLayer1 :: Ptr Layer
-  , gameBackLayer2 :: Ptr Layer
-  , gameFrontLayer :: Ptr Layer
+  { gameGlobals :: Globals
   
   , playerStatus   :: PlayerStatus
   , playerDirection:: PlayerDirection
@@ -119,16 +117,10 @@ newBalloonSprite parent = do
     writeJSRef (spriteYOffset balloon) (fromIntegral offset)
     return balloon
 
-newGameState :: IO GameState
-newGameState = do
-    scene <- newScene game_width game_height True
-    back2 <- newLayer scene "back-2"
-    back1 <- newLayer scene "back-1"
-    front <- newLayer scene "front"
-    
-    
+newGameState :: Globals -> IO GameState
+newGameState (globals@Globals {..}) = do
     scoreSprite <- newTopLeftAligned 200 100
-                 $ newEmptySprite front
+                 $ newEmptySprite globalFrontLayer
     writeJSRef (spritePosition scoreSprite) (20, 20)
     
     dom <- getDom scoreSprite
@@ -141,7 +133,7 @@ newGameState = do
     let offScreenMountain = OffScreenParallaxLayer mountainImage mountainAnimation
     mountainSprite <- newParallax mountainAnimation
                     $ newTopLeftAligned 640 920
-                    $ newSprite back2 mountainImage
+                    $ newSprite globalBackLayer2 mountainImage
     let onScreenMountain = OnScreenParallaxLayer mountainSprite offScreenMountain
     
     let buildingImage = "img/city-zoomed-in.png"
@@ -149,7 +141,7 @@ newGameState = do
     let offScreenBuilding = OffScreenParallaxLayer buildingImage buildingAnimation
     buildingSprite <- newParallax buildingAnimation
                     $ newTopLeftAligned 640 2856
-                    $ newSprite back1 "img/city-zoomed-in.png"
+                    $ newSprite globalBackLayer1 "img/city-zoomed-in.png"
     let onScreenBuilding = OnScreenParallaxLayer buildingSprite offScreenBuilding
     
     let buildingShadowImage = "img/city-shadow.png"
@@ -158,27 +150,24 @@ newGameState = do
     let offScreenBuildingShadow = OffScreenParallaxLayer buildingShadowImage buildingShadowAnimation
     buildingShadowSprite <- newParallax buildingShadowAnimation
                           $ newTopLeftAligned 640 920
-                          $ newSprite back2 buildingShadowImage
+                          $ newSprite globalBackLayer2 buildingShadowImage
     let onScreenBuildingShadow = OnScreenParallaxLayer buildingShadowSprite offScreenBuildingShadow
     
     offScreenBirds <- generateBirds
     onScreenBirds <- forM offScreenBirds $ \offScreenBird -> do
-      birdSprite <- newBirdSprite front offScreenBird
+      birdSprite <- newBirdSprite globalFrontLayer offScreenBird
       return $ OnScreenBird birdSprite offScreenBird
     
-    playerSprite <- newPlayerSprite front
+    playerSprite <- newPlayerSprite globalFrontLayer
     writeJSRef (spritePosition playerSprite) (playerInitialXPosition, playerInitialYPosition)
 
-    input <- newInput scene
+    input <- newInput globalScene
 
-    initialBalloon <- newBalloonSprite front
+    initialBalloon <- newBalloonSprite globalFrontLayer
     positionBalloon playerSprite initialBalloon Straight
     
     return $ GameState
-      { gameScene      = scene
-      , gameBackLayer1 = back1
-      , gameBackLayer2 = back2
-      , gameFrontLayer = front
+      { gameGlobals = globals
       
       , playerStatus     = Floating 1
       , playerDirection  = Straight
