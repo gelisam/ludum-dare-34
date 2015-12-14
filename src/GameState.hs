@@ -281,9 +281,9 @@ nextGameState (g@GameState {..}) = do
 
     let remaining = map snd $ filter (\(k,_) -> k `notElem` grabbedIndices) indexedEntities
 
-    let playerStatus' = if null playerBalloons'
+    let playerStatus' = Floating 12 {-if null playerBalloons'  -- TODO: revert once ending is tested
                         then Falling
-                        else Floating (length playerBalloons')
+                        else Floating (length playerBalloons')-}
         playerYPosition' = playerYPosition + playerYVelocity
         playerYVelocity' = case playerStatus' of
           Falling    -> max (-50) (playerYVelocity - 0.5)
@@ -321,7 +321,7 @@ nextGameState (g@GameState {..}) = do
     let playerAge' = max playerAge screenYPosition
     -- age every 1400 pixels
 --   let ageOffset  = floor (playerAge / 1400)
-    let ageOffset' = floor (playerAge' / 1400)
+    let ageOffset' = min 6 (floor (playerAge' / 1400))
 
 --    
 --    Doing this only on age changes flickers the character and brings it back
