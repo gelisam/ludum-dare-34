@@ -70,7 +70,6 @@ data GameState = GameState
 computeSeconds :: Int -> Double
 computeSeconds ticks = fromIntegral ticks / fps
 
-
 newPlayerSprite :: CanHoldSprite a => a -> IO PlayerSprite
 newPlayerSprite parent = do
     sprite <- newWrapped game_width
@@ -128,6 +127,14 @@ newGameState (globals@Globals {..}) = do
                           $ newTopLeftAligned 640 920
                           $ newSprite globalBackLayer2 buildingShadowImage
     let onScreenBuildingShadow = OnScreenParallaxLayer buildingShadowSprite offScreenBuildingShadow
+
+    let gameOverAnimation = delayed (-20)
+                          $ linear 0 50
+    let offScreenGameOver = OffScreenParallaxLayer "img/game-over.png" gameOverAnimation
+    gameOverSprite <- newParallax gameOverAnimation
+                    $ newTopLeftAligned 640 673
+                    $ newSprite globalBackLayer1 "img/game-over.png"
+    let onScreenGameOver = OnScreenParallaxLayer gameOverSprite offScreenGameOver
     
     offScreenBirds <- generateBirds
     onScreenBirds <- mapM (putBirdOnScreen globals) offScreenBirds
@@ -171,6 +178,7 @@ newGameState (globals@Globals {..}) = do
       , currentBackgrounds = [ ParallaxOn onScreenMountain
                              , ParallaxOn onScreenBuilding
                              , ParallaxOn onScreenBuildingShadow
+                             , ParallaxOn onScreenGameOver
                              ]
       , backgroundsAbove   = []
       , input = input
