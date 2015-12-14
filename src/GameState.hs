@@ -22,6 +22,7 @@ import Scaled
 import SpriteJS
 import Wrapped
 import Random
+import Balloons
 
 
 data PlayerStatus
@@ -43,7 +44,7 @@ data GameState = GameState
   , playerStatus   :: PlayerStatus
   , playerDirection:: PlayerDirection
   , playerSprite   :: PlayerSprite
-  , playerBalloons :: [BalloonSprite]
+  , playerBalloons :: [HeldBalloonSprite]
   , playerAge      :: Double
   
   , playerYPosition :: Double
@@ -104,10 +105,10 @@ newBirdSprite parent offScreenBird = newDirectionalMoving (birdAnimation offScre
                                    $ newCentered birdImageWidth birdImageHeight
                                    $ newSprite parent "img/flying-enemy.png"
 
--- TODO: use a random balloon image instead
-newBalloonSprite :: CanHoldSprite a => a -> IO BalloonSprite
-newBalloonSprite parent = do
-    balloon <- newWrapped game_width
+newBalloonSprite :: CanHoldSprite a => a -> OffScreenBalloon -> IO BalloonSprite
+newBalloonSprite parent (OffScreenBalloon x y) = do
+    balloon <- newMoving (pure (x, y)) 
+             $ newWrapped game_width
              $ newCollidable parent (-30) (-70) 50 50
              $ newScaled balloonScale
              $ newCentered balloonImageWidth balloonImageHeight
@@ -157,13 +158,18 @@ newGameState (globals@Globals {..}) = do
     onScreenBirds <- forM offScreenBirds $ \offScreenBird -> do
       birdSprite <- newBirdSprite globalFrontLayer offScreenBird
       return $ OnScreenBird birdSprite offScreenBird
+
+    offScreenBalloons <- generateBalloons
+    onScreenBalloons <- forM offScreenBalloons $ \b -> do
+      balloonSprite <- newBalloonSprite globalFrontLayer b
+      return $ OnScreenBalloon balloonSprite b
     
     playerSprite <- newPlayerSprite globalFrontLayer
     writeJSRef (spritePosition playerSprite) (playerInitialXPosition, playerInitialYPosition)
 
     input <- newInput globalScene
 
-    initialBalloon <- newBalloonSprite globalFrontLayer
+    initialBalloon <- newHeldBalloonSprite globalFrontLayer 3
     positionBalloon playerSprite initialBalloon Straight
     
     return $ GameState
@@ -183,7 +189,7 @@ newGameState (globals@Globals {..}) = do
       , gameScore   = 0
       
       , entitiesBelow   = []
-      , currentEntities = map BirdOn onScreenBirds
+      , currentEntities = (map BirdOn onScreenBirds) ++ (map BalloonOn onScreenBalloons)
       , entitiesAbove   = []
       
       , backgroundsBelow   = []

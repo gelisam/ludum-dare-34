@@ -16,7 +16,7 @@ import Scaled
 import SpriteJS
 
 
-type BalloonSprite = Wrapped (Collidable (Scaled (Centered NormalSprite)))
+type BalloonSprite = Animated (Wrapped (Collidable (Scaled (Centered NormalSprite))))
 
 data OffScreenBalloon = OffScreenBalloon
   { balloonInitialX :: Double
@@ -63,5 +63,5 @@ data OffScreenEntity
 drawOnScreenEntity :: Double -> Double -> Double -> Ptr Ticker -> OnScreenEntity -> IO ()
 drawOnScreenEntity t h a ticker = go
   where
-    go (BalloonOn balloon) = drawBalloon balloon ()
+    go (BalloonOn balloon) = drawBalloon balloon (t, h, a, ())
     go (BirdOn    bird   ) = drawBird    bird    (t, h, a, (ticker, ()))
