@@ -292,7 +292,8 @@ nextGameState (g@GameState {..}) = do
         screenYTarget = case playerStatus' of
           Falling    -> playerYPosition' - 200
           Floating _ -> playerYPosition' - playerInitialYPosition
-        screenYPosition' = screenYPosition + (screenYTarget - screenYPosition) * 0.4
+        screenYPosition' = screenYPosition + playerYVelocity'
+        screenYPosition'' = screenYPosition' + (screenYTarget - screenYPosition') * 0.1
 
     mapM_ removeSprite pop
     mapM_ (\b -> positionBalloon playerSprite b playerDirection') keep 
@@ -312,7 +313,7 @@ nextGameState (g@GameState {..}) = do
       
       , playerYPosition = playerYPosition'
       , playerYVelocity = playerYVelocity'
-      , screenYPosition = screenYPosition'
+      , screenYPosition = screenYPosition''
       }
 
 drawGameState :: Double -> Double -> Double -> Ptr Ticker -> GameState -> IO ()
