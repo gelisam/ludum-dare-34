@@ -13,6 +13,7 @@ import Animation
 import Backgrounds
 import Collidable
 import Constants
+import ContentGenerator
 import Centered
 import Entities
 import JSRef
@@ -154,9 +155,10 @@ newGameState = do
                           $ newSprite back2 buildingShadowImage
     let onScreenBuildingShadow = OnScreenParallaxLayer buildingShadowSprite offScreenBuildingShadow
     
-    let offScreenBird = (OffScreenBird 0 0)
-    birdSprite <- newBirdSprite front offScreenBird
-    let onScreenBird = OnScreenBird birdSprite offScreenBird
+    offScreenBirds <- generateBirds
+    onScreenBirds <- forM offScreenBirds $ \offScreenBird -> do
+      birdSprite <- newBirdSprite front offScreenBird
+      return $ OnScreenBird birdSprite offScreenBird
     
     playerSprite <- newPlayerSprite front
     writeJSRef (spritePosition playerSprite) (300, 780)
@@ -183,8 +185,7 @@ newGameState = do
       , gameScore   = 0
       
       , entitiesBelow   = []
-      , currentEntities = [ BirdOn onScreenBird
-                          ]
+      , currentEntities = map BirdOn onScreenBirds
       , entitiesAbove   = []
       
       , backgroundsBelow   = []
