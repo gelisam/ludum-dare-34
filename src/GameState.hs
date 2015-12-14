@@ -278,13 +278,13 @@ nextGameState (g@GameState {..}) = do
               _ <- if collides then (removeSprite balloon) else return ()
               return $ if collides then Nothing else Just balloon
 
-    print $ length remainingBalloons
-    
     let playerStatus' = if null remainingBalloons
                         then Falling
                         else Floating (length remainingBalloons)
         playerYPosition' = playerYPosition + playerYVelocity
-        playerYVelocity' = 56 / 25
+        playerYVelocity' = case playerStatus' of
+          Falling    -> playerYVelocity - 0.5
+          Floating n -> 56 / 25 + fromIntegral (n-1) * (5.6 / 25)
         screenYPosition' = playerYPosition' - playerInitialYPosition
 
     writeJSRef (spriteYPosition playerSprite) (playerYPosition' - screenYPosition')
