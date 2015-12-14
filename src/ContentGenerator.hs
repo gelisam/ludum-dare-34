@@ -1,7 +1,8 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module ContentGenerator where
 
-import Entities
+import Balloon
+import Bird
 
 
 instance (Num a, Num b) => Num (a, b) where

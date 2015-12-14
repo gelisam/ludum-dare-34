@@ -1,13 +1,14 @@
-{-# LANGUAGE OverloadedStrings, RecordWildCards, LambdaCase #-}
-module Balloons where
+{-# LANGUAGE OverloadedStrings #-}
+module HeldBalloon where
 
-import Constants
-import Wrapped
-import Collidable
 import Centered
-import SpriteJS
-import Scaled
+import Collidable
+import Constants
 import JSRef
+import Scaled
+import SpriteJS
+import Wrapped
+
 
 type HeldBalloonSprite = Wrapped (Collidable (Scaled (Centered NormalSprite)))
 

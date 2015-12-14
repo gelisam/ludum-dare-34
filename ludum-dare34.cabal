@@ -18,6 +18,8 @@ executable ludum-dare34
   other-modules:       Animated
                      , Animation
                      , Backgrounds
+                     , Balloon
+                     , Bird
                      , Collidable
                      , Constants
                      , ContentGenerator
@@ -26,6 +28,7 @@ executable ludum-dare34
                      , Entities
                      , GameState
                      , Globals
+                     , HeldBalloon
                      , JSRef
                      , Looping
                      , Random

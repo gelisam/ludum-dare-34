@@ -10,13 +10,15 @@ import Data.Either
 import Animated
 import Animation
 import Backgrounds
-import Balloons
+import Balloon
+import Bird
 import Collidable
 import Constants
 import ContentGenerator
 import Centered
 import Entities
 import Globals
+import HeldBalloon
 import JSRef
 import Looping
 import Scaled
