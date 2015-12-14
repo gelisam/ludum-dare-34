@@ -3,7 +3,6 @@ module GameState where
 
 import Control.Monad
 import Control.Arrow
-import Control.Monad.Extra
 import Haste.DOM
 import Haste.Prim
 import Data.Either
@@ -21,6 +20,7 @@ import Looping
 import Scaled
 import SpriteJS
 import Wrapped
+import Random
 
 
 data PlayerStatus
@@ -114,6 +114,9 @@ newBalloonSprite parent = do
              $ newScaled balloonScale
              $ newCentered balloonImageWidth balloonImageHeight
              $ newSprite parent "img/balloons.png"
+    r <- randomRIO (0,3)
+    let offset = 475 * (r :: Int)
+    writeJSRef (spriteYOffset balloon) (fromIntegral offset)
     return balloon
 
 newGameState :: IO GameState
@@ -272,20 +275,23 @@ nextGameState (g@GameState {..}) = do
                  BirdOn bird -> Left (birdSprite bird)
                  BalloonOn balloon -> Right (balloonSprite balloon)
 
-    remainingBalloons <- flip mapMaybeM playerBalloons $ \balloon -> do
-              positionBalloon playerSprite balloon playerDirection'
-              collides <- collidesWithList balloon birds
-              _ <- if collides then (removeSprite balloon) else return ()
-              return $ if collides then Nothing else Just balloon
+    balloonCollisions <- flip mapM playerBalloons $ \balloon -> do
+          collides <- collidesWithList balloon birds
+          return $ if collides then Left balloon else Right balloon
+      
+    let (pop, keep) = partitionEithers balloonCollisions
 
-    let playerStatus' = if null remainingBalloons
+    let playerStatus' = if null keep
                         then Falling
-                        else Floating (length remainingBalloons)
+                        else Floating (length keep)
         playerYPosition' = playerYPosition + playerYVelocity
         playerYVelocity' = case playerStatus' of
           Falling    -> playerYVelocity - 0.5
           Floating n -> 56 / 25 + fromIntegral (n-1) * (5.6 / 25)
         screenYPosition' = playerYPosition' - playerInitialYPosition
+
+    mapM_ removeSprite pop
+    mapM_ (\b -> positionBalloon playerSprite b playerDirection') keep 
 
     writeJSRef (spriteYPosition playerSprite) (playerYPosition' - screenYPosition')
     
@@ -298,7 +304,7 @@ nextGameState (g@GameState {..}) = do
     return $ g
       { playerStatus    = playerStatus'
       , playerDirection = playerDirection'
-      , playerBalloons  = remainingBalloons
+      , playerBalloons  = keep
       
       , playerYPosition = playerYPosition'
       , playerYVelocity = playerYVelocity'
