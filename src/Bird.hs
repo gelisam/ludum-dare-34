@@ -59,5 +59,15 @@ takeBirdOffScreen (OnScreenBird {..}) = do
     return offScreenBird
 
 
+isBirdVisible :: Double -> OffScreenBird -> Ordering
+isBirdVisible screenY (OffScreenBird _ y)
+  | y - balloonHeight / 2 > screenY               = GT
+  | y + balloonHeight / 2 < screenY + game_height = LT
+  | otherwise                                     = EQ
+
+isBirdStillVisible :: Double -> OnScreenBird -> Ordering
+isBirdStillVisible screenY = offScreenBird >>> isBirdVisible screenY
+
+
 drawBird :: OnScreenBird -> UpdateParam BirdSprite -> IO ()
 drawBird = birdSprite >>> updateSprite

@@ -31,6 +31,15 @@ takeEntityOffScreen (BalloonOn b) = BalloonOff <$> takeBalloonOffScreen b
 takeEntityOffScreen (BirdOn    b) = BirdOff    <$> takeBirdOffScreen    b
 
 
+isEntityVisible :: Double -> OffScreenEntity -> Ordering
+isEntityVisible screenY (BalloonOff b) = isBalloonVisible screenY b
+isEntityVisible screenY (BirdOff    b) = isBirdVisible    screenY b
+
+isEntityStillVisible :: Double -> OnScreenEntity -> Ordering
+isEntityStillVisible screenY (BalloonOn b) = isBalloonStillVisible screenY b
+isEntityStillVisible screenY (BirdOn    b) = isBirdStillVisible    screenY b
+
+
 drawOnScreenEntity :: Double -> Double -> Double -> Ptr Ticker -> OnScreenEntity -> IO ()
 drawOnScreenEntity t h a ticker = go
   where
