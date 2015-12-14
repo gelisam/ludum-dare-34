@@ -310,10 +310,25 @@ nextGameState (g@GameState {..}) = do
       writeJSRef (spriteOpacity (fst playerSprite)) 0
       writeJSRef (spriteOpacity (snd playerSprite)) 100
 
+    let playerAge' = max playerAge screenYPosition
+    -- age every 1400 pixels
+--   let ageOffset  = floor (playerAge / 1400)
+    let ageOffset' = floor (playerAge' / 1400)
+
+--    
+--    Doing this only on age changes flickers the character and brings it back
+--    to the youngest version, why?
+--    if (ageOffset < ageOffset') then do
+    writeJSRef (spriteYOffset (fst playerSprite)) $ (fromIntegral ageOffset') * 300
+    writeJSRef (spriteYOffset (snd playerSprite)) $ (fromIntegral ageOffset') * 300 
+--    else return ()
+
+
     return $ g
       { playerStatus    = playerStatus'
       , playerDirection = playerDirection'
       , playerBalloons  = playerBalloons'
+      , playerAge       = playerAge'
       
       , playerYPosition = playerYPosition'
       , playerYVelocity = playerYVelocity'
