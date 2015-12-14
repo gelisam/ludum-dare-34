@@ -42,5 +42,11 @@ putBalloonOnScreen (Globals {..}) (off@(OffScreenBalloon x y)) = do
     writeJSRef (spriteYOffset sprite) (fromIntegral offset)
     return (OnScreenBalloon sprite off)
 
+takeBalloonOffScreen :: OnScreenBalloon -> IO OffScreenBalloon
+takeBalloonOffScreen (OnScreenBalloon {..}) = do
+    removeSprite balloonSprite
+    return offScreenBalloon
+
+
 drawBalloon :: OnScreenBalloon -> UpdateParam BalloonSprite -> IO ()
 drawBalloon = balloonSprite >>> updateSprite

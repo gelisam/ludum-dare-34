@@ -26,6 +26,11 @@ putEntityOnScreen :: Globals -> OffScreenEntity -> IO OnScreenEntity
 putEntityOnScreen g (BalloonOff b) = BalloonOn <$> putBalloonOnScreen g b
 putEntityOnScreen g (BirdOff    b) = BirdOn    <$> putBirdOnScreen    g b
 
+takeEntityOffScreen :: OnScreenEntity -> IO OffScreenEntity
+takeEntityOffScreen (BalloonOn b) = BalloonOff <$> takeBalloonOffScreen b
+takeEntityOffScreen (BirdOn    b) = BirdOff    <$> takeBirdOffScreen    b
+
+
 drawOnScreenEntity :: Double -> Double -> Double -> Ptr Ticker -> OnScreenEntity -> IO ()
 drawOnScreenEntity t h a ticker = go
   where

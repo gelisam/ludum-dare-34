@@ -42,6 +42,7 @@ birdAnimation offScreenBird = fmap go xAndIsGoingLeft
         y = birdInitialY offScreenBird
         isFlipped = not isGoingLeft
 
+
 putBirdOnScreen :: Globals -> OffScreenBird -> IO OnScreenBird
 putBirdOnScreen (Globals {..}) off = do
     sprite <- newDirectionalMoving (birdAnimation off)
@@ -51,6 +52,12 @@ putBirdOnScreen (Globals {..}) off = do
             $ newCentered birdImageWidth birdImageHeight
             $ newSprite globalEntityLayer "img/flying-enemy.png"
     return (OnScreenBird sprite off)
+
+takeBirdOffScreen :: OnScreenBird -> IO OffScreenBird
+takeBirdOffScreen (OnScreenBird {..}) = do
+    removeSprite birdSprite
+    return offScreenBird
+
 
 drawBird :: OnScreenBird -> UpdateParam BirdSprite -> IO ()
 drawBird = birdSprite >>> updateSprite
