@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings, RecordWildCards #-}
 module Entities where
 
 -- an entity is a game object the player can interact with
@@ -7,13 +8,17 @@ module Entities where
 import Control.Arrow
 import Haste.Prim
 
-import Wrapped
 import Animated
 import Collidable
+import Constants
 import Centered
+import Globals
+import JSRef
 import Looping
+import Random
 import Scaled
 import SpriteJS
+import Wrapped
 
 
 type BalloonSprite = Animated (Wrapped (Collidable (Scaled (Centered NormalSprite))))
@@ -28,6 +33,19 @@ data OnScreenBalloon = OnScreenBalloon
   { balloonSprite    :: BalloonSprite
   , offScreenBalloon :: OffScreenBalloon
   }
+
+putBalloonOnScreen :: Globals -> OffScreenBalloon -> IO OnScreenBalloon
+putBalloonOnScreen (Globals {..}) (off@(OffScreenBalloon x y)) = do
+    sprite <- newMoving (pure (x,y))
+            $ newWrapped game_width
+            $ newCollidable globalEntityLayer (-30) (-70) 50 50
+            $ newScaled balloonScale
+            $ newCentered balloonImageWidth balloonImageHeight
+            $ newSprite globalEntityLayer "img/balloons.png"
+    r <- randomRIO (0,3)
+    let offset = balloonImageHeight * (r :: Int)
+    writeJSRef (spriteYOffset sprite) (fromIntegral offset)
+    return (OnScreenBalloon sprite off)
 
 drawBalloon :: OnScreenBalloon -> UpdateParam BalloonSprite -> IO ()
 drawBalloon = balloonSprite >>> updateSprite

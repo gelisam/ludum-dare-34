@@ -10,6 +10,7 @@ import Data.Either
 import Animated
 import Animation
 import Backgrounds
+import Balloons
 import Collidable
 import Constants
 import ContentGenerator
@@ -21,8 +22,6 @@ import Looping
 import Scaled
 import SpriteJS
 import Wrapped
-import Random
-import Balloons
 
 
 data PlayerStatus
@@ -105,19 +104,6 @@ newBirdSprite parent offScreenBird = newDirectionalMoving (birdAnimation offScre
                                    $ newCentered birdImageWidth birdImageHeight
                                    $ newSprite parent "img/flying-enemy.png"
 
-newBalloonSprite :: CanHoldSprite a => a -> OffScreenBalloon -> IO BalloonSprite
-newBalloonSprite parent (OffScreenBalloon x y) = do
-    balloon <- newMoving (pure (x, y)) 
-             $ newWrapped game_width
-             $ newCollidable parent (-30) (-70) 50 50
-             $ newScaled balloonScale
-             $ newCentered balloonImageWidth balloonImageHeight
-             $ newSprite parent "img/balloons.png"
-    r <- randomRIO (0,3)
-    let offset = 475 * (r :: Int)
-    writeJSRef (spriteYOffset balloon) (fromIntegral offset)
-    return balloon
-
 newGameState :: Globals -> IO GameState
 newGameState (globals@Globals {..}) = do
     scoreSprite <- newTopLeftAligned 200 100
@@ -161,9 +147,7 @@ newGameState (globals@Globals {..}) = do
       return $ OnScreenBird birdSprite offScreenBird
 
     offScreenBalloons <- generateBalloons
-    onScreenBalloons <- forM offScreenBalloons $ \b -> do
-      balloonSprite <- newBalloonSprite globalFrontLayer b
-      return $ OnScreenBalloon balloonSprite b
+    onScreenBalloons <- mapM (putBalloonOnScreen globals) offScreenBalloons
     
     playerSprite <- newPlayerSprite globalFrontLayer
     writeJSRef (spritePosition playerSprite) (playerInitialXPosition, playerInitialYPosition)
