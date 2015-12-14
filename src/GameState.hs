@@ -304,9 +304,11 @@ nextGameState (g@GameState {..}) = do
                                then 50
                                else max 0 (invincibilityFrames - 1)
         playerYPosition' = playerYPosition + playerYVelocity
+        playerWeightFactor = (8 - fromIntegral ageOffset) / 8
         playerYVelocity' = case playerStatus' of
           Falling    -> max (-50) (playerYVelocity - 0.5)
-          Floating n -> let target = 56 / 25 + fromIntegral (n-1) * (25 / 25)
+          Floating n -> let target = playerWeightFactor * 56 / 25
+                                   + fromIntegral (n-1) * (25 / 25)
                          in min target (playerYVelocity + 0.5)
         screenYTarget = case playerStatus' of
           Falling    -> playerYPosition' - 200
