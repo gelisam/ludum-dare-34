@@ -266,9 +266,10 @@ nextGameState (g@GameState {..}) = do
                  (key, BirdOn bird) -> Left (key, birdSprite bird)
                  (key, BalloonOn balloon) -> Right (key, balloonSprite balloon)
 
+    let ageOffset = min 7 (floor (playerAge / 1400))
     popOrKeep <- flip mapM playerBalloons $ \heldBalloon -> do
           collides <- collidesWithList heldBalloon (map snd birds)
-          return $ if collides then Left heldBalloon else Right heldBalloon
+          return $ if ageOffset < 7 && collides then Left heldBalloon else Right heldBalloon
 
     let (pop, keep) = partitionEithers popOrKeep
 
@@ -332,7 +333,7 @@ nextGameState (g@GameState {..}) = do
     let playerAge' = max playerAge screenYPosition
     -- age every 1400 pixels
 --   let ageOffset  = floor (playerAge / 1400)
-    let ageOffset' = min 6 (floor (playerAge' / 1400))
+    let ageOffset' = min 7 (floor (playerAge' / 1400))
 
 --    
 --    Doing this only on age changes flickers the character and brings it back
@@ -341,6 +342,8 @@ nextGameState (g@GameState {..}) = do
     writeJSRef (spriteYOffset (fst playerSprite)) $ (fromIntegral ageOffset') * 300
     writeJSRef (spriteYOffset (snd playerSprite)) $ (fromIntegral ageOffset') * 300 
 --    else return ()
+    when (ageOffset' == 7) $ do
+      writeJSRef (spriteOpacity (fst playerSprite)) 0.5
 
 
     return $ g
