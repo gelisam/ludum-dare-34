@@ -186,7 +186,7 @@ newGameState = do
       , playerBalloons   = [initialBalloon]
       , playerAge        = 0
       
-      , playerYPosition = playerInitialYPosition
+      , playerYPosition = 8000 --playerInitialYPosition  -- TODO: remove me once falls are tested
       , playerYVelocity = 0
       , screenYPosition = 0
   
@@ -286,8 +286,9 @@ nextGameState (g@GameState {..}) = do
                         else Floating (length keep)
         playerYPosition' = playerYPosition + playerYVelocity
         playerYVelocity' = case playerStatus' of
-          Falling    -> playerYVelocity - 0.5
-          Floating n -> 56 / 25 + fromIntegral (n-1) * (5.6 / 25)
+          Falling    -> max (-50) (playerYVelocity - 0.5)
+          Floating n -> let target = 56 / 25 + fromIntegral (n-1) * (5.6 / 25)
+                         in min target (playerYVelocity + 0.5)
         screenYPosition' = playerYPosition' - playerInitialYPosition
 
     mapM_ removeSprite pop
