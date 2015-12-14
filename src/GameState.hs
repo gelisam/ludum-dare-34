@@ -287,7 +287,7 @@ nextGameState (g@GameState {..}) = do
         playerYPosition' = playerYPosition + playerYVelocity
         playerYVelocity' = case playerStatus' of
           Falling    -> max (-50) (playerYVelocity - 0.5)
-          Floating n -> let target = 56 / 25 + fromIntegral (n-1) * (5.6 / 25)
+          Floating n -> let target = 56 / 25 + fromIntegral (n-1) * (25 / 25)
                          in min target (playerYVelocity + 0.5)
         screenYTarget = case playerStatus' of
           Falling    -> playerYPosition' - 200
