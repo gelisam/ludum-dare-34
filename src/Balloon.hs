@@ -31,7 +31,7 @@ data OnScreenBalloon = OnScreenBalloon
 
 putBalloonOnScreen :: Globals -> OffScreenBalloon -> IO OnScreenBalloon
 putBalloonOnScreen (Globals {..}) (off@(OffScreenBalloon x y)) = do
-    sprite <- newMoving (pure (x,y))
+    sprite <- newMoving (\t -> (x + 5 * cos t, y))
             $ newWrapped game_width
             $ newCollidable globalEntityLayer (-30) (-70) 50 50
             $ newScaled balloonScale
