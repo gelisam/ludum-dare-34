@@ -23,9 +23,8 @@ data Globals = Globals
   , globalMessages       :: Ptr Layer
   }
 
-newGlobals :: IO Globals
-newGlobals = do
-    scene <- newScene game_width game_height True
+newGlobals :: Ptr Scene -> IO Globals
+newGlobals scene = do
     back2 <- newLayer scene "back-2"
     back1 <- newLayer scene "back-1"
     front <- newLayer scene "front"

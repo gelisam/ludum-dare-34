@@ -25,6 +25,9 @@ setDebug = ffi "(function(b) {sjs.debug = b;})"
 newScene :: Int -> Int -> Bool -> IO (Ptr Scene)
 newScene = ffi "(function(w,h,b) {return sjs.Scene({w:w, h:h, autoPause:b});})"
 
+resetScene :: Ptr Scene -> IO ()
+resetScene = ffi "(function(scene) {scene.reset();})"
+
 loadImages :: Ptr Scene -> [JSString] -> IO () -> IO ()
 loadImages = ffi "(function(scene,images,callback) {scene.loadImages(images,callback);})"
 
