@@ -1,3 +1,4 @@
+{-# LANGUAGE MultiParamTypeClasses #-}
 module Entities where
 
 -- an entity is a game object the player can interact with
@@ -8,6 +9,7 @@ import Haste.Prim
 
 import Balloon
 import Bird
+import GameObject
 import Globals
 import SpriteJS
 
@@ -21,31 +23,21 @@ data OffScreenEntity
   | BirdOff   OffScreenBird
   deriving (Show, Eq)
 
-offScreenEntity :: OnScreenEntity -> OffScreenEntity
-offScreenEntity (BalloonOn b) = BalloonOff $ offScreenBalloon b
-offScreenEntity (BirdOn    b) = BirdOff    $ offScreenBird    b
+instance GameObject OnScreenEntity OffScreenEntity where
+    offScreenObject (BalloonOn b) = BalloonOff $ offScreenObject b
+    offScreenObject (BirdOn    b) = BirdOff    $ offScreenObject b
+    
+    objectYPosition (BalloonOff b) = objectYPosition b
+    objectYPosition (BirdOff    b) = objectYPosition b
+    
+    objectHeight (BalloonOff b) = objectHeight b
+    objectHeight (BirdOff    b) = objectHeight b
 
-putEntityOnScreen :: Globals -> OffScreenEntity -> IO OnScreenEntity
-putEntityOnScreen g (BalloonOff b) = BalloonOn <$> putBalloonOnScreen g b
-putEntityOnScreen g (BirdOff    b) = BirdOn    <$> putBirdOnScreen    g b
-
-takeEntityOffScreen :: OnScreenEntity -> IO OffScreenEntity
-takeEntityOffScreen (BalloonOn b) = BalloonOff <$> takeBalloonOffScreen b
-takeEntityOffScreen (BirdOn    b) = BirdOff    <$> takeBirdOffScreen    b
-
-
-isEntityVisible :: Double -> OffScreenEntity -> Ordering
-isEntityVisible screenY (BalloonOff b) = isBalloonVisible screenY b
-isEntityVisible screenY (BirdOff    b) = isBirdVisible    screenY b
-
-isEntityStillVisible :: Double -> OnScreenEntity -> Ordering
-isEntityStillVisible screenY (BalloonOn b) = isBalloonStillVisible screenY b
-isEntityStillVisible screenY (BirdOn    b) = isBirdStillVisible    screenY b
-
-
-entityYPosition :: OffScreenEntity -> Double
-entityYPosition (BalloonOff b) = balloonYPosition b
-entityYPosition (BirdOff    b) = birdYPosition    b
+    putOnScreen g (BalloonOff b) = BalloonOn <$> putOnScreen g b
+    putOnScreen g (BirdOff    b) = BirdOn    <$> putOnScreen g b
+    
+    takeOffScreen (BalloonOn b) = BalloonOff <$> takeOffScreen b
+    takeOffScreen (BirdOn    b) = BirdOff    <$> takeOffScreen b
 
 
 drawOnScreenEntity :: Double -> Double -> Double -> Ptr Ticker -> OnScreenEntity -> IO ()

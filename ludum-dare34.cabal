@@ -27,6 +27,7 @@ executable ludum-dare34
                      , Centered
                      , Data.List.Extra
                      , Entities
+                     , GameObject
                      , GameState
                      , Globals
                      , HeldBalloon

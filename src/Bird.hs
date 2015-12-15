@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, RecordWildCards #-}
+{-# LANGUAGE MultiParamTypeClasses, OverloadedStrings, RecordWildCards #-}
 module Bird where
 
 import Control.Arrow
@@ -8,6 +8,7 @@ import Animation
 import Collidable
 import Constants
 import Centered
+import GameObject
 import Globals
 import Looping
 import Scaled
@@ -43,34 +44,22 @@ birdAnimation offScreenBird = fmap go xAndIsGoingLeft
         isFlipped = not isGoingLeft
 
 
-putBirdOnScreen :: Globals -> OffScreenBird -> IO OnScreenBird
-putBirdOnScreen (Globals {..}) off = do
-    sprite <- newDirectionalMoving (birdAnimation off)
-            $ newCollidable globalEntityLayer (-32) (-32) 64 64
-            $ newLooping globalEntityLayer birdImageWidth 11 5
-            $ newScaled birdScale
-            $ newCentered birdImageWidth birdImageHeight
-            $ newSprite globalEntityLayer "img/flying-enemy.png"
-    return (OnScreenBird sprite off)
+instance GameObject OnScreenBird OffScreenBird where
+    offScreenObject = offScreenBird
+    objectYPosition = birdInitialY
+    objectHeight _  = birdHeight
 
-takeBirdOffScreen :: OnScreenBird -> IO OffScreenBird
-takeBirdOffScreen (OnScreenBird {..}) = do
-    removeSprite birdSprite
-    return offScreenBird
-
-
-isBirdVisible :: Double -> OffScreenBird -> Ordering
-isBirdVisible screenY (OffScreenBird _ y)
-  | y + balloonHeight / 2 < screenY               = GT
-  | y - balloonHeight / 2 > screenY + game_height = LT
-  | otherwise                                     = EQ
-
-isBirdStillVisible :: Double -> OnScreenBird -> Ordering
-isBirdStillVisible screenY = offScreenBird >>> isBirdVisible screenY
-
-
-birdYPosition :: OffScreenBird -> Double
-birdYPosition = birdInitialY
+    putOnScreen (Globals {..}) off = do
+        sprite <- newDirectionalMoving (birdAnimation off)
+                $ newCollidable globalEntityLayer (-32) (-32) 64 64
+                $ newLooping globalEntityLayer birdImageWidth 11 5
+                $ newScaled birdScale
+                $ newCentered birdImageWidth birdImageHeight
+                $ newSprite globalEntityLayer "img/flying-enemy.png"
+        return (OnScreenBird sprite off)
+    takeOffScreen (OnScreenBird {..}) = do
+        removeSprite birdSprite
+        return offScreenBird
 
 
 drawBird :: OnScreenBird -> UpdateParam BirdSprite -> IO ()

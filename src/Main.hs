@@ -9,7 +9,6 @@ import Animated
 import Centered
 import Constants
 import GameState
-import GameEntity
 import Globals
 import JSRef
 import Scaled

@@ -18,6 +18,7 @@ import ContentGenerator
 import Centered
 import Data.List.Extra
 import Entities
+import GameObject
 import Globals
 import HeldBalloon
 import JSRef
@@ -150,7 +151,7 @@ newGameState (globals@Globals {..}) = do
     
     offScreenBalloons <- generateBalloons
     offScreenBirds <- generateBirds
-    let futureEntities = mergeOn entityYPosition (map BalloonOff offScreenBalloons)
+    let futureEntities = mergeOn objectYPosition (map BalloonOff offScreenBalloons)
                                                  (map BirdOff    offScreenBirds   )
     
     playerSprite <- newPlayerSprite globalFrontLayer
@@ -334,8 +335,8 @@ nextGameState (g@GameState {..}) = do
         East     -> playerImageWidth * 2
     
     (entitiesBelow', currentEntities', entitiesAbove') <-
-      shuffleZipper isEntityVisible                 isEntityStillVisible
-                    (putEntityOnScreen gameGlobals) takeEntityOffScreen
+      shuffleZipper isVisible                 isStillVisible
+                    (putOnScreen gameGlobals) takeOffScreen
                     screenYNegative
                     (entitiesBelow, remaining, entitiesAbove)
     
