@@ -134,7 +134,7 @@ newGameState (globals@Globals {..}) = do
     let gameOverAnimation = delayed (-20)
                           $ linear 0 50
     let offScreenGameOver = OffScreenParallaxLayer gameOverImage gameOverAnimation
-    gameOverSprite <- newParallax gameOverAnimation
+    gameOverSprite <- newFloatingParallax gameOverAnimation
                     $ newTopLeftAligned 640 673
                     $ newSprite globalBackLayer1 gameOverImage
     let onScreenGameOver = OnScreenParallaxLayer gameOverSprite offScreenGameOver
@@ -143,7 +143,7 @@ newGameState (globals@Globals {..}) = do
     let theEndAnimation = delayed 0
                         $ linear (-5000) 50
     let offScreenTheEnd = OffScreenParallaxLayer theEndImage theEndAnimation
-    theEndSprite <- newParallax theEndAnimation
+    theEndSprite <- newFloatingParallax theEndAnimation
                   $ newTopLeftAligned 640 861
                   $ newSprite globalBackLayer1 theEndImage
     let onScreenTheEnd = OnScreenParallaxLayer theEndSprite offScreenTheEnd

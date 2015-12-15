@@ -84,6 +84,16 @@ newParallax anim = newAnimated $ \sprite _ h _ -> do
     let y = anim meters
     writeJSRef (spriteYPosition sprite) y
 
+newFloatingParallax :: SpriteLike a
+                    => Animation Double
+                    -> IO a
+                    -> IO (Animated a)
+newFloatingParallax anim = newAnimated $ \sprite t h _ -> do
+    let meters = h / 100  -- divide by 56 to make the building scroll at the same rate as
+                          -- the entities, or by a larger number to make it scroll slower
+    let y = anim meters + 5 * cos t
+    writeJSRef (spriteYPosition sprite) y
+
 instance SpriteLike a => SpriteLike (Animated a) where
     type UpdateParam (Animated a) = (Double, Double, Double, UpdateParam a)
     
