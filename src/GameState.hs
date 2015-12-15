@@ -163,7 +163,7 @@ newGameState (globals@Globals {..}) = do
     input <- newInput globalScene
 
     initialBalloon <- newHeldBalloonSprite globalFrontLayer 3
-    positionBalloon playerSprite initialBalloon Straight
+    positionBalloon playerSprite initialBalloon Straight 0
     
     return $ GameState
       { gameGlobals = globals
@@ -251,15 +251,18 @@ nextPlayerVelocity ageOffset = go
     go East     player = (nextXVelocity ageOffset (interpolate playerWeightFactor (-5) (-9.6))
                                                   (interpolate playerWeightFactor (-5)   9.6 )   0.8  player)
 
-positionBalloon :: SpriteLike a => SpriteLike b => a -> b -> PlayerDirection -> IO ()
-positionBalloon player balloon dir = do
+positionBalloon :: SpriteLike a => SpriteLike b => a -> b -> PlayerDirection -> Int -> IO ()
+positionBalloon player balloon dir i = do
     (px, py) <- readJSRef (spritePosition player)
     let bx = px - case dir of
                     Straight -> balloonWidth/1.5
                     West     -> balloonWidth/1.2
                     East     -> balloonWidth/2
     let by = py - balloonHeight
-    writeJSRef (spritePosition balloon) (bx, by)
+    let off = (fromIntegral (i `mod` 4))
+    let angle = if (i `mod` 2) /= 0 then (-10) * off else 10 * off
+    writeJSRef (spritePosition balloon) (bx + angle, by + (abs angle))
+
 
 nextGameState :: GameState -> IO GameState
 nextGameState (g@GameState {..}) = do
@@ -286,7 +289,8 @@ nextGameState (g@GameState {..}) = do
     let (pop, keep) = partitionEithers popOrKeep
 
     mapM_ removeSprite pop
-    mapM_ (\b -> positionBalloon (fst playerSprite) b playerDirection') keep 
+    forM_ (zip [0::Int ..] keep) $ \(i, b) -> do
+           positionBalloon (fst playerSprite) b playerDirection' i
 
     grabOrDrop <- flip mapM balloons $ \(key, balloon) -> do
           collides <- collidesWith balloon (fst playerSprite)
