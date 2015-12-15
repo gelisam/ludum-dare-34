@@ -5,6 +5,7 @@ import Control.Monad
 import Data.IORef
 import Haste.Prim
 
+import Animated
 import Centered
 import Constants
 import GameState
@@ -32,18 +33,24 @@ titleScreen scene = do
                   $ newSprite scene "img/city-zoomed-out.png"
       writeJSRef (spriteYPosition background) (game_height - 797)
       
-      title <- newCentered 640 673
+      title <- newMoving (\t -> (game_width / 2, 330 + 5 * cos t))
+             $ newCentered 640 673
              $ newScaled 0.9
              $ newSprite scene "img/title.png"
-      writeJSRef (spriteYPosition title) 330
       
-      updateSprite background ()
-      updateSprite title      ()
-      
-      ticker <- newTicker scene 10 $ \ticker -> do
+      ticker <- newTicker scene fps $ \ticker -> do
+          ticks <- getCurrentTick ticker
+          let t = computeSeconds ticks
+          print t
+          
+          updateSprite background           ()
+          updateSprite title      (t, 0, 0, ())
+          
           r <- keydown input
           when r $ do
             mainGame scene
+
+          
       runTicker ticker
 
 
