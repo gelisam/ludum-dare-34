@@ -41,7 +41,6 @@ titleScreen scene = do
       ticker <- newTicker scene fps $ \ticker -> do
           ticks <- getCurrentTick ticker
           let t = computeSeconds ticks
-          print t
           
           updateSprite background           ()
           updateSprite title      (t, 0, 0, ())
