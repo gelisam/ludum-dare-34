@@ -167,7 +167,7 @@ newGameState (globals@Globals {..}) = do
     initialBalloon <- newHeldBalloonSprite globalFrontLayer 3
     positionBalloon playerSprite initialBalloon Straight 0
 
-    burstSound <- newSound "snd/Snare.wav"
+    burstSound <- newSound "snd/burst.wav"
 
     return $ GameState
       { gameGlobals = globals
