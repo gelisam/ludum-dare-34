@@ -8,7 +8,6 @@ import Control.Monad
 import Control.Monad.Extra
 import JSRef
 
-
 newtype Scene = Scene JSAny
 newtype Surface = Surface JSAny
 newtype Sprite = Sprite JSAny
@@ -16,6 +15,7 @@ newtype Layer = Layer JSAny
 newtype Input = Input JSAny
 newtype Cycle = Cycle JSAny
 newtype Ticker = Ticker JSAny
+newtype Sound = Sound JSAny
 
 
 setDebug :: Bool -> IO ()
@@ -37,6 +37,11 @@ setMainCallback = ffi "(function(scene,callback) {scene.main = callback;})"
 loadMap :: Ptr Scene -> JSString -> IO ()
 loadMap = ffi "(function(scene,json_filename) {sjs.map.loadMap(json_filename, scene);})"
 
+newSound :: String -> IO (Ptr Sound)
+newSound = ffi "(function(soundPath){ return new Audio(soundPath); })"
+
+playSound :: Ptr Sound -> IO ()
+playSound = ffi "(function(audio) { audio.play(); })"
 
 newScrollingSurface :: Ptr Scene -> IO (Ptr Surface)
 newScrollingSurface = ffi
@@ -74,29 +79,37 @@ newSprite parent image = do
 
 class SpriteLike a where
     type UpdateParam a
-    
+
     rawSprites       :: a -> [NormalSprite]
     collisionSprites :: a -> [NormalSprite]
-    
+
     spriteImage    :: a -> JSRef JSString
     spriteOffset   :: a -> JSRef (Double, Double) -- the image is cropped to this position
     spriteSize     :: a -> JSRef (Double, Double) -- and size
     spriteScale    :: a -> JSRef (Double, Double) -- then scaled
     spriteAngle    :: a -> JSRef Double -- in turns, not degrees nor radians
     spriteOpacity  :: a -> JSRef Double -- 1.0 for opaque, 0.0 for invisible
-    
+
     spritePosition :: a -> JSRef (Double, Double)
     spriteVelocity :: a -> JSRef (Double, Double)
-    
+
     updateSprite :: a -> UpdateParam a -> IO ()
 
     removeSprite :: a -> IO ()
 
 type NormalSprite = Ptr Sprite
 
+type NormalSound = Ptr Sound
+
+class SoundLike a where
+    play :: a -> IO ()
+
+instance SoundLike (Ptr Sound) where
+    play sound = playSound sound
+
 instance SpriteLike (Ptr Sprite) where
     type UpdateParam (Ptr Sprite) = ()
-    
+
     rawSprites       = return
     collisionSprites = return
 
@@ -132,12 +145,12 @@ instance SpriteLike (Ptr Sprite) where
       { readJSRef  = ffi "(function(sprite) {return [sprite.xv, sprite.yv];})" sprite
       , writeJSRef = ffi "(function(sprite,v) {sprite.xv = v[0]; sprite.yv = v[1];})" sprite
       }
-    
+
     updateSprite sprite () = ffi "(function(sprite) {sprite.update();})" sprite
 
     removeSprite sprite = do
       _ <- forM (rawSprites sprite) $ \s -> rawRemove s
-      return ()  
+      return ()
 
 
 spriteXOffset :: SpriteLike a => a -> JSRef Double

@@ -43,28 +43,30 @@ type PlayerSprite = Wrapped (Collidable (Looping (Scaled (Centered NormalSprite)
 
 data GameState = GameState
   { gameGlobals :: Globals
-  
+
   , playerStatus   :: PlayerStatus
   , playerDirection:: PlayerDirection
   , playerSprite   :: (PlayerSprite, PlayerSprite)
   , playerBalloons :: [HeldBalloonSprite]
   , playerAge      :: Double
   , invincibilityFrames :: Int
-  
+
   , playerYPosition :: Double
   , playerYVelocity :: Double
   , screenYPosition :: Double
-  
+
   , scoreSprite :: NormalSprite
   , gameScore   :: Double
-  
+
   , entitiesBelow   :: [OffScreenEntity]
   , currentEntities :: [OnScreenEntity]
   , entitiesAbove   :: [OffScreenEntity]
-  
+
   , backgroundsBelow   :: [OffScreenBackground]
   , currentBackgrounds :: [OnScreenBackground]
   , backgroundsAbove   :: [OffScreenBackground]
+
+  , burstSound :: NormalSound
 
   , input :: Ptr Input
   }
@@ -99,11 +101,11 @@ newGameState (globals@Globals {..}) = do
     scoreSprite <- newTopLeftAligned 200 100
                  $ newEmptySprite globalFrontLayer
     writeJSRef (spritePosition scoreSprite) (20, 20)
-    
+
     dom <- getDom scoreSprite
     set dom [attr "id" =: "score"]
-    
-    
+
+
     let mountainImage = "img/mountain-shadows.png"
     let mountainAnimation = delayed 10
                           $ linear 0 9
@@ -112,7 +114,7 @@ newGameState (globals@Globals {..}) = do
                     $ newTopLeftAligned 640 920
                     $ newSprite globalBackLayer2 mountainImage
     let onScreenMountain = OnScreenParallaxLayer mountainSprite offScreenMountain
-    
+
     let buildingImage = "img/city-zoomed-in.png"
     let buildingAnimation = delayed 0
                           $ linear (920 - 2856) 56
@@ -121,7 +123,7 @@ newGameState (globals@Globals {..}) = do
                     $ newTopLeftAligned 640 2856
                     $ newSprite globalBackLayer1 "img/city-zoomed-in.png"
     let onScreenBuilding = OnScreenParallaxLayer buildingSprite offScreenBuilding
-    
+
     let buildingShadowImage = "img/city-shadow.png"
     let buildingShadowAnimation = delayed 10
                                 $ linear 0 18
@@ -148,12 +150,12 @@ newGameState (globals@Globals {..}) = do
                   $ newTopLeftAligned 640 861
                   $ newSprite globalBackLayer1 theEndImage
     let onScreenTheEnd = OnScreenParallaxLayer theEndSprite offScreenTheEnd
-    
+
     offScreenBalloons <- generateBalloons
     offScreenBirds <- generateBirds
     let futureEntities = mergeOn objectYPosition (map BalloonOff offScreenBalloons)
                                                  (map BirdOff    offScreenBirds   )
-    
+
     playerSprite <- newPlayerSprite globalFrontLayer
     writeJSRef (spritePosition playerSprite) (playerInitialXPosition, playerInitialYPosition)
 
@@ -164,10 +166,12 @@ newGameState (globals@Globals {..}) = do
 
     initialBalloon <- newHeldBalloonSprite globalFrontLayer 3
     positionBalloon playerSprite initialBalloon Straight 0
-    
+
+    burstSound <- newSound "snd/Snare.wav"
+
     return $ GameState
       { gameGlobals = globals
-      
+
       , playerStatus     = Floating 1
       , playerDirection  = Straight
       , playerSprite     = (playerSprite, fallingSprite)
@@ -175,18 +179,18 @@ newGameState (globals@Globals {..}) = do
       , playerAge        = 0
       , invincibilityFrames = 0
 
-      
+
       , playerYPosition = playerInitialYPosition
       , playerYVelocity = 0
       , screenYPosition = playerInitialYPosition - playerInitialYPosition
-  
+
       , scoreSprite = scoreSprite
       , gameScore   = 0
-      
+
       , entitiesBelow   = []
       , currentEntities = []
       , entitiesAbove   = futureEntities
-      
+
       , backgroundsBelow   = []
       , currentBackgrounds = [ ParallaxOn onScreenMountain
                              , ParallaxOn onScreenBuilding
@@ -195,14 +199,16 @@ newGameState (globals@Globals {..}) = do
                              , ParallaxOn onScreenTheEnd
                              ]
       , backgroundsAbove   = []
+
+      , burstSound = burstSound
       , input = input
       }
 
 -- move game objects between the on-screen and off-screen buffers.
--- 
+--
 -- For Ordering, GT means entirely above the screen, EQ means at least partially on screen,
 -- and LT means entirely below the screen.
--- 
+--
 -- Game objects in the first buffer (below the screen) should be order from top to bottom,
 -- game objects in the second buffer (on the screen) should be ordered from bottom to top,
 -- game objects in the last buffer (above the screen) should be ordered from bottom to top.
@@ -219,16 +225,16 @@ shuffleZipper isOffVisible isOnVisible putOnScreen takeOffScreen h (below, curre
     newlyAbove' <- mapM takeOffScreen newlyAbove
     belowCurrent' <- mapM putOnScreen belowCurrent
     aboveCurrent' <- mapM putOnScreen aboveCurrent
-    
+
     let below'   = reverse newlyBelow' ++ stillBelow
     let current' = reverse belowCurrent' ++ stillCurrent ++ aboveCurrent'
     let above'   = newlyAbove' ++ stillAbove
-    
+
     return (below', current', above')
   where
     (belowCurrent, stillBelow) = span (isOffVisible h >>> (/= LT)) below
     (aboveCurrent, stillAbove) = span (isOffVisible h >>> (/= GT)) above
-    
+
     newlyBelow   = filter (isOnVisible h >>> (== LT)) current
     stillCurrent = filter (isOnVisible h >>> (== EQ)) current
     newlyAbove   = filter (isOnVisible h >>> (== GT)) current
@@ -240,7 +246,7 @@ nextXVelocity ageOffset minV maxV amount sprite = do
     writeJSRef (spriteXVelocity sprite) vx'
     applyVelocity sprite
 
-nextPlayerVelocity :: SpriteLike a => Int -> PlayerDirection -> a -> IO () 
+nextPlayerVelocity :: SpriteLike a => Int -> PlayerDirection -> a -> IO ()
 nextPlayerVelocity ageOffset = go
   where
     playerWeightFactor = (8 - fromIntegral ageOffset / 1.5) / 8
@@ -267,7 +273,7 @@ positionBalloon player balloon dir i = do
 nextGameState :: GameState -> IO GameState
 nextGameState (g@GameState {..}) = do
     let ageOffset = min 7 (floor (playerAge / 1400))
-    
+
     going_left <- leftdown input
     going_right <- rightdown input
     let playerDirection' = if going_left then West else if going_right then East else Straight
@@ -288,7 +294,10 @@ nextGameState (g@GameState {..}) = do
 
     let (pop, keep) = partitionEithers popOrKeep
 
-    mapM_ removeSprite pop
+    forM_ pop $ \p -> do
+           removeSprite p
+           playSound burstSound
+
     forM_ (zip [0::Int ..] keep) $ \(i, b) -> do
            positionBalloon (fst playerSprite) b playerDirection' i
 
@@ -331,19 +340,19 @@ nextGameState (g@GameState {..}) = do
 
     writeJSRef (spriteYPosition (fst playerSprite)) (playerYPosition' - screenYPosition')
     writeJSRef (spriteYPosition (snd playerSprite)) (playerYPosition' - screenYPosition')
-   
+
     when (playerStatus /= Falling) $ do
       writeJSRef (spriteXOffset (fst playerSprite)) $ case playerDirection' of
         Straight -> 0
         West     -> playerImageWidth
         East     -> playerImageWidth * 2
-    
+
     (entitiesBelow', currentEntities', entitiesAbove') <-
       shuffleZipper isVisible                 isStillVisible
                     (putOnScreen gameGlobals) takeOffScreen
                     screenYNegative
                     (entitiesBelow, remaining, entitiesAbove)
-    
+
     if (playerStatus /= Falling) then do
       writeJSRef (spriteOpacity (fst playerSprite)) (if invincibilityFrames' `mod` 10 > 5 then 0 else 100)
       writeJSRef (spriteOpacity (snd playerSprite)) 0
@@ -356,12 +365,12 @@ nextGameState (g@GameState {..}) = do
 --   let ageOffset  = floor (playerAge / 1400)
     let ageOffset' = min 7 (floor (playerAge' / 1400))
 
---    
+--
 --    Doing this only on age changes flickers the character and brings it back
 --    to the youngest version, why?
 --    if (ageOffset < ageOffset') then do
     writeJSRef (spriteYOffset (fst playerSprite)) $ (fromIntegral ageOffset') * 300
-    writeJSRef (spriteYOffset (snd playerSprite)) $ (fromIntegral ageOffset') * 300 
+    writeJSRef (spriteYOffset (snd playerSprite)) $ (fromIntegral ageOffset') * 300
 --    else return ()
     when (ageOffset' == 7) $ do
       writeJSRef (spriteOpacity (fst playerSprite)) 0.5
@@ -373,11 +382,11 @@ nextGameState (g@GameState {..}) = do
       , playerBalloons  = playerBalloons'
       , playerAge       = playerAge'
       , invincibilityFrames = invincibilityFrames'
-      
+
       , playerYPosition = playerYPosition'
       , playerYVelocity = playerYVelocity'
       , screenYPosition = screenYPosition''
-      
+
       , entitiesBelow   = entitiesBelow'
       , currentEntities = currentEntities'
       , entitiesAbove   = entitiesAbove'
@@ -390,7 +399,7 @@ drawGameState t h a ticker (GameState {..}) = do
     mapM_ (drawOnScreenEntity     t h a ticker) currentEntities
     mapM_ (drawOnScreenBackground t h a ticker) currentBackgrounds
     forM_ playerBalloons $ \balloon -> updateSprite balloon ()
-    
+
     -- throws an exception for some reason?
     --dom <- getDom scoreSprite
     --set dom ["innerHTML" =: printf "Score %d" (round gameScore :: Int)]
